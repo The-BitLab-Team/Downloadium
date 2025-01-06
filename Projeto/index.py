@@ -32,9 +32,13 @@ def download_video():
         headers = {
             'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
-        thumbnail_data = requests.get(thumbnail_url, headers=headers).content
-        with open(os.path.join('videos', f'{yt.title}_thumbnail.jpg'), 'wb') as f:
-            f.write(thumbnail_data)
+        response = requests.get(thumbnail_url, headers=headers)
+
+        if response.status_code == 200:  # Verifica se a resposta foi bem-sucedida
+            with open(os.path.join('videos', f'{yt.title}_thumbnail.jpg'), 'wb') as f:
+                f.write(response.content)
+        else:
+            messagebox.showerror("Erro", f"Falha ao baixar a thumbnail. Código HTTP: {response.status_code}")
 
         # Download das legendas, se disponíveis
         if yt.captions:
