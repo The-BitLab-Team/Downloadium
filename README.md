@@ -19,6 +19,15 @@ O objetivo do Downloadium é fornecer uma experiência completa para baixar víd
 11. **Player Integrado**: Permite visualizar os arquivos baixados diretamente no software.
 12. **Detecção de novos vídeos**: Monitoramento automático de canais e playlists.
 13. **Integração com nuvem**: Envio automático para serviços como Google Drive ou Dropbox.
+## Estrutura do Projeto
+
+O projeto Downloadium está organizado de duas maneiras distintas:
+
+1. **Projeto de Arquivo Único**: Localizado na pasta `projeto_de_arquivo_único`, este formato contém um único arquivo chamado `index.py`, que inclui todo o código do projeto.
+
+2. **Projeto Modularizado**: Encontrado na pasta `Downloadium`, este formato adota uma abordagem modular, onde os componentes do software são divididos em diferentes módulos, facilitando a manutenção e a escalabilidade.
+
+Você pode escolher qualquer uma das estruturas para trabalhar, conforme sua preferência.
 
 ## Checklist de Desenvolvimento
 

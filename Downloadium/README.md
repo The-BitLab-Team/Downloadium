@@ -13,19 +13,6 @@ Downloadium é um software de download de vídeos do YouTube, desenvolvido inici
 - **Legendas**: Suporte para download de legendas em diversos idiomas, como arquivo separado ou embutido no vídeo.
 - **Múltiplas faixas de áudio**: Suporte para vídeos com múltiplos canais de áudio.
 
-## Estrutura do Projeto
-
-```
-.
-├── components.py       # Componentes da interface gráfica
-├── downloader.py       # Lógica principal para downloads
-├── main.py             # Ponto de entrada da aplicação
-├── utils.py            # Funções utilitárias
-├── requirements.txt    # Dependências do projeto
-├── tests/              # Testes unitários
-│   └── test_utils.py   # Testes para utilitários
-└── readme.md           # Documentação do projeto
-```
 
 ## Requisitos
 
@@ -58,7 +45,7 @@ Contribuições são bem-vindas! Por favor, siga os passos abaixo:
    ```bash
    git checkout -b minha-nova-feature
    ```
-3. Commit suas alterações:
+3. Dê Commit em suas alterações:
    ```bash
    git commit -m "Adicionei uma nova feature"
    ```
