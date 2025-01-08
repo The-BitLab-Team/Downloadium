@@ -9,11 +9,36 @@
         "documentation": {}
     },
     {
+        "label": "requests",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "requests",
+        "description": "requests",
+        "detail": "requests",
+        "documentation": {}
+    },
+    {
         "label": "YoutubeDL",
         "importPath": "yt_dlp",
         "description": "yt_dlp",
         "isExtraImport": true,
         "detail": "yt_dlp",
+        "documentation": {}
+    },
+    {
+        "label": "ensure_directory_exists",
+        "importPath": "Downloadium.backend.utils",
+        "description": "Downloadium.backend.utils",
+        "isExtraImport": true,
+        "detail": "Downloadium.backend.utils",
+        "documentation": {}
+    },
+    {
+        "label": "sanitize_filename",
+        "importPath": "Downloadium.backend.utils",
+        "description": "Downloadium.backend.utils",
+        "isExtraImport": true,
+        "detail": "Downloadium.backend.utils",
         "documentation": {}
     },
     {
@@ -152,15 +177,6 @@
         "description": "pytube",
         "isExtraImport": true,
         "detail": "pytube",
-        "documentation": {}
-    },
-    {
-        "label": "requests",
-        "kind": 6,
-        "isExtraImport": true,
-        "importPath": "requests",
-        "description": "requests",
-        "detail": "requests",
         "documentation": {}
     },
     {
@@ -382,73 +398,73 @@
     {
         "label": "download_video",
         "kind": 2,
-        "importPath": "Projeto.index",
-        "description": "Projeto.index",
+        "importPath": "projeto_de_arquivo_único.index",
+        "description": "projeto_de_arquivo_único.index",
         "peekOfCode": "def download_video():\n    url = url_entry.get()\n    if not url:\n        messagebox.showerror(\"Erro\", \"Por favor, insira a URL do vídeo.\")\n        return\n    try:\n        yt = YouTube(url)\n        streams = yt.streams.filter(progressive=True, file_extension='mp4')\n        resolution = resolution_var.get()\n        # Verifica se a resolução está disponível",
-        "detail": "Projeto.index",
+        "detail": "projeto_de_arquivo_único.index",
         "documentation": {}
     },
     {
         "label": "update_resolutions",
         "kind": 2,
-        "importPath": "Projeto.index",
-        "description": "Projeto.index",
+        "importPath": "projeto_de_arquivo_único.index",
+        "description": "projeto_de_arquivo_único.index",
         "peekOfCode": "def update_resolutions():\n    url = url_entry.get()\n    if not url:\n        messagebox.showerror(\"Erro\", \"Por favor, insira a URL do vídeo.\")\n        return\n    try:\n        yt = YouTube(url)\n        streams = yt.streams.filter(progressive=True, file_extension='mp4')\n        resolutions = [stream.resolution for stream in streams]\n        # Atualiza o menu de resoluções",
-        "detail": "Projeto.index",
+        "detail": "projeto_de_arquivo_único.index",
         "documentation": {}
     },
     {
         "label": "app",
         "kind": 5,
-        "importPath": "Projeto.index",
-        "description": "Projeto.index",
+        "importPath": "projeto_de_arquivo_único.index",
+        "description": "projeto_de_arquivo_único.index",
         "peekOfCode": "app = tk.Tk()\napp.title(\"Downloadium\")\ntk.Label(app, text=\"URL do vídeo:\").pack(pady=5)\nurl_entry = tk.Entry(app, width=50)\nurl_entry.pack(pady=5)\nresolution_var = tk.StringVar(app)\nresolution_menu = tk.OptionMenu(app, resolution_var, '')\nresolution_menu.pack(pady=5)\nupdate_button = tk.Button(app, text=\"Atualizar Resoluções\", command=update_resolutions)\nupdate_button.pack(pady=5)",
-        "detail": "Projeto.index",
+        "detail": "projeto_de_arquivo_único.index",
         "documentation": {}
     },
     {
         "label": "url_entry",
         "kind": 5,
-        "importPath": "Projeto.index",
-        "description": "Projeto.index",
+        "importPath": "projeto_de_arquivo_único.index",
+        "description": "projeto_de_arquivo_único.index",
         "peekOfCode": "url_entry = tk.Entry(app, width=50)\nurl_entry.pack(pady=5)\nresolution_var = tk.StringVar(app)\nresolution_menu = tk.OptionMenu(app, resolution_var, '')\nresolution_menu.pack(pady=5)\nupdate_button = tk.Button(app, text=\"Atualizar Resoluções\", command=update_resolutions)\nupdate_button.pack(pady=5)\ndownload_button = tk.Button(app, text=\"Baixar Vídeo\", command=download_video)\ndownload_button.pack(pady=20)\napp.mainloop()",
-        "detail": "Projeto.index",
+        "detail": "projeto_de_arquivo_único.index",
         "documentation": {}
     },
     {
         "label": "resolution_var",
         "kind": 5,
-        "importPath": "Projeto.index",
-        "description": "Projeto.index",
+        "importPath": "projeto_de_arquivo_único.index",
+        "description": "projeto_de_arquivo_único.index",
         "peekOfCode": "resolution_var = tk.StringVar(app)\nresolution_menu = tk.OptionMenu(app, resolution_var, '')\nresolution_menu.pack(pady=5)\nupdate_button = tk.Button(app, text=\"Atualizar Resoluções\", command=update_resolutions)\nupdate_button.pack(pady=5)\ndownload_button = tk.Button(app, text=\"Baixar Vídeo\", command=download_video)\ndownload_button.pack(pady=20)\napp.mainloop()",
-        "detail": "Projeto.index",
+        "detail": "projeto_de_arquivo_único.index",
         "documentation": {}
     },
     {
         "label": "resolution_menu",
         "kind": 5,
-        "importPath": "Projeto.index",
-        "description": "Projeto.index",
+        "importPath": "projeto_de_arquivo_único.index",
+        "description": "projeto_de_arquivo_único.index",
         "peekOfCode": "resolution_menu = tk.OptionMenu(app, resolution_var, '')\nresolution_menu.pack(pady=5)\nupdate_button = tk.Button(app, text=\"Atualizar Resoluções\", command=update_resolutions)\nupdate_button.pack(pady=5)\ndownload_button = tk.Button(app, text=\"Baixar Vídeo\", command=download_video)\ndownload_button.pack(pady=20)\napp.mainloop()",
-        "detail": "Projeto.index",
+        "detail": "projeto_de_arquivo_único.index",
         "documentation": {}
     },
     {
         "label": "update_button",
         "kind": 5,
-        "importPath": "Projeto.index",
-        "description": "Projeto.index",
+        "importPath": "projeto_de_arquivo_único.index",
+        "description": "projeto_de_arquivo_único.index",
         "peekOfCode": "update_button = tk.Button(app, text=\"Atualizar Resoluções\", command=update_resolutions)\nupdate_button.pack(pady=5)\ndownload_button = tk.Button(app, text=\"Baixar Vídeo\", command=download_video)\ndownload_button.pack(pady=20)\napp.mainloop()",
-        "detail": "Projeto.index",
+        "detail": "projeto_de_arquivo_único.index",
         "documentation": {}
     },
     {
         "label": "download_button",
         "kind": 5,
-        "importPath": "Projeto.index",
-        "description": "Projeto.index",
+        "importPath": "projeto_de_arquivo_único.index",
+        "description": "projeto_de_arquivo_único.index",
         "peekOfCode": "download_button = tk.Button(app, text=\"Baixar Vídeo\", command=download_video)\ndownload_button.pack(pady=20)\napp.mainloop()",
-        "detail": "Projeto.index",
+        "detail": "projeto_de_arquivo_único.index",
         "documentation": {}
     }
 ]

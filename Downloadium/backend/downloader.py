@@ -1,5 +1,7 @@
 import os
+import requests
 from yt_dlp import YoutubeDL
+from Downloadium.backend.utils import ensure_directory_exists, sanitize_filename
 
 def download_video(url, output_path='videos', quality='best'):
     """Downloads a YouTube video based on the provided URL.
@@ -14,7 +16,7 @@ def download_video(url, output_path='videos', quality='best'):
     """
     try:
         # Ensure the output directory exists
-        os.makedirs(output_path, exist_ok=True)
+        ensure_directory_exists(output_path)
 
         # Set options for yt-dlp
         options = {
@@ -42,7 +44,7 @@ def download_thumbnail(url, output_path='thumbnails'):
     """
     try:
         # Ensure the output directory exists
-        os.makedirs(output_path, exist_ok=True)
+        ensure_directory_exists(output_path)
 
         # Get video metadata
         options = {'skip_download': True, 'quiet': True}
@@ -56,7 +58,7 @@ def download_thumbnail(url, output_path='thumbnails'):
         response = requests.get(thumbnail_url)
         response.raise_for_status()
 
-        file_path = os.path.join(output_path, f"{info['title']}_thumbnail.jpg")
+        file_path = os.path.join(output_path, f"{sanitize_filename(info['title'])}_thumbnail.jpg")
         with open(file_path, 'wb') as f:
             f.write(response.content)
 
@@ -78,7 +80,7 @@ def download_subtitles(url, output_path='subtitles', language='en'):
     """
     try:
         # Ensure the output directory exists
-        os.makedirs(output_path, exist_ok=True)
+        ensure_directory_exists(output_path)
 
         # Set options for yt-dlp
         options = {
