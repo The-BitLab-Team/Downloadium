@@ -28,6 +28,17 @@ def download_video():
         video.download(output_path='videos')
 
         # Download da thumbnail
+        download_thumbnail(yt)
+
+        # Download das legendas, se disponíveis
+        download_subtitles(yt)
+
+        messagebox.showinfo("Sucesso", "Download concluído com sucesso!")
+    except Exception as e:
+        messagebox.showerror("Erro", f"Ocorreu um erro: {e}")
+
+def download_thumbnail(yt):
+    try:
         thumbnail_url = yt.thumbnail_url
         print(f"Thumbnail URL: {thumbnail_url}")
         headers = {
@@ -40,18 +51,19 @@ def download_video():
                 f.write(response.content)
         else:
             messagebox.showerror("Erro", f"Falha ao baixar a thumbnail. Código HTTP: {response.status_code}")
+    except Exception as e:
+        messagebox.showerror("Erro", f"Ocorreu um erro ao baixar a thumbnail: {e}")
 
-        # Download das legendas, se disponíveis
+def download_subtitles(yt):
+    try:
         if yt.captions:
             caption = yt.captions.get_by_language_code('en')
             if caption:
                 caption_file = caption.generate_srt_captions()
                 with open(os.path.join('videos', f'{yt.title}.srt'), 'w', encoding='utf-8') as f:
                     f.write(caption_file)
-
-        messagebox.showinfo("Sucesso", "Download concluído com sucesso!")
     except Exception as e:
-        messagebox.showerror("Erro", f"Ocorreu um erro: {e}")
+        messagebox.showerror("Erro", f"Ocorreu um erro ao baixar as legendas: {e}")
 
 def update_resolutions():
     url = url_entry.get()

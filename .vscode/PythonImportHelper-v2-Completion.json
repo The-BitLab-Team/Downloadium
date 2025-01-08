@@ -405,6 +405,24 @@
         "documentation": {}
     },
     {
+        "label": "download_thumbnail",
+        "kind": 2,
+        "importPath": "projeto_de_arquivo_único.index",
+        "description": "projeto_de_arquivo_único.index",
+        "peekOfCode": "def download_thumbnail(yt):\n    try:\n        thumbnail_url = yt.thumbnail_url\n        print(f\"Thumbnail URL: {thumbnail_url}\")\n        headers = {\n            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'\n        }\n        response = requests.get(thumbnail_url, headers=headers)\n        if response.status_code == 200:  # Verifica se a resposta foi bem-sucedida\n            with open(os.path.join('videos', f'{yt.title}_thumbnail.jpg'), 'wb') as f:",
+        "detail": "projeto_de_arquivo_único.index",
+        "documentation": {}
+    },
+    {
+        "label": "download_subtitles",
+        "kind": 2,
+        "importPath": "projeto_de_arquivo_único.index",
+        "description": "projeto_de_arquivo_único.index",
+        "peekOfCode": "def download_subtitles(yt):\n    try:\n        if yt.captions:\n            caption = yt.captions.get_by_language_code('en')\n            if caption:\n                caption_file = caption.generate_srt_captions()\n                with open(os.path.join('videos', f'{yt.title}.srt'), 'w', encoding='utf-8') as f:\n                    f.write(caption_file)\n    except Exception as e:\n        messagebox.showerror(\"Erro\", f\"Ocorreu um erro ao baixar as legendas: {e}\")",
+        "detail": "projeto_de_arquivo_único.index",
+        "documentation": {}
+    },
+    {
         "label": "update_resolutions",
         "kind": 2,
         "importPath": "projeto_de_arquivo_único.index",
