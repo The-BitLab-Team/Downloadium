@@ -26,6 +26,14 @@
         "documentation": {}
     },
     {
+        "label": "YoutubeDL",
+        "importPath": "yt_dlp",
+        "description": "yt_dlp",
+        "isExtraImport": true,
+        "detail": "yt_dlp",
+        "documentation": {}
+    },
+    {
         "label": "ensure_directory_exists",
         "importPath": "Downloadium.backend.utils",
         "description": "Downloadium.backend.utils",
@@ -115,6 +123,22 @@
         "documentation": {}
     },
     {
+        "label": "filedialog",
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "isExtraImport": true,
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
+        "label": "ttk",
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "isExtraImport": true,
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
         "label": "download_video",
         "importPath": "Downloadium.backend.downloader",
         "description": "Downloadium.backend.downloader",
@@ -169,14 +193,6 @@
         "description": "utils",
         "isExtraImport": true,
         "detail": "utils",
-        "documentation": {}
-    },
-    {
-        "label": "YouTube",
-        "importPath": "pytube",
-        "description": "pytube",
-        "isExtraImport": true,
-        "detail": "pytube",
         "documentation": {}
     },
     {
@@ -396,93 +412,264 @@
         "documentation": {}
     },
     {
+        "label": "ensure_directory_exists",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def ensure_directory_exists(directory):\n    if not os.path.exists(directory):\n        os.makedirs(directory)\ndef sanitize_filename(filename):\n    invalid_chars = ['<', '>', ':', '\"', '/', '\\\\', '|', '?', '*']\n    for char in invalid_chars:\n        filename = filename.replace(char, '_')\n    return filename\ndef validate_url(url):\n    return url.startswith(\"http://\") or url.startswith(\"https://\")",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "sanitize_filename",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def sanitize_filename(filename):\n    invalid_chars = ['<', '>', ':', '\"', '/', '\\\\', '|', '?', '*']\n    for char in invalid_chars:\n        filename = filename.replace(char, '_')\n    return filename\ndef validate_url(url):\n    return url.startswith(\"http://\") or url.startswith(\"https://\")\n# Funções de download\ndef download_video(url, output_path='videos', quality='best'):\n    try:",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "validate_url",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def validate_url(url):\n    return url.startswith(\"http://\") or url.startswith(\"https://\")\n# Funções de download\ndef download_video(url, output_path='videos', quality='best'):\n    try:\n        ensure_directory_exists(output_path)\n        options = {\n            'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),\n            'format': quality,\n            'progress_hooks': [progress_hook]",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
         "label": "download_video",
         "kind": 2,
-        "importPath": "projeto_de_arquivo_único.index",
-        "description": "projeto_de_arquivo_único.index",
-        "peekOfCode": "def download_video():\n    url = url_entry.get()\n    if not url:\n        messagebox.showerror(\"Erro\", \"Por favor, insira a URL do vídeo.\")\n        return\n    try:\n        yt = YouTube(url)\n        streams = yt.streams.filter(progressive=True, file_extension='mp4')\n        resolution = resolution_var.get()\n        # Verifica se a resolução está disponível",
-        "detail": "projeto_de_arquivo_único.index",
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def download_video(url, output_path='videos', quality='best'):\n    try:\n        ensure_directory_exists(output_path)\n        options = {\n            'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),\n            'format': quality,\n            'progress_hooks': [progress_hook]\n        }\n        with YoutubeDL(options) as ydl:\n            ydl.download([url])",
+        "detail": "single_file_project.downloadium",
         "documentation": {}
     },
     {
         "label": "download_thumbnail",
         "kind": 2,
-        "importPath": "projeto_de_arquivo_único.index",
-        "description": "projeto_de_arquivo_único.index",
-        "peekOfCode": "def download_thumbnail(yt):\n    try:\n        thumbnail_url = yt.thumbnail_url\n        print(f\"Thumbnail URL: {thumbnail_url}\")\n        headers = {\n            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'\n        }\n        response = requests.get(thumbnail_url, headers=headers)\n        if response.status_code == 200:  # Verifica se a resposta foi bem-sucedida\n            with open(os.path.join('videos', f'{yt.title}_thumbnail.jpg'), 'wb') as f:",
-        "detail": "projeto_de_arquivo_único.index",
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def download_thumbnail(url, output_path='thumbnails'):\n    try:\n        ensure_directory_exists(output_path)\n        ydl_opts = {'skip_download': True, 'writesubtitles': False, 'writeautomaticsub': False}\n        with YoutubeDL(ydl_opts) as ydl:\n            info_dict = ydl.extract_info(url, download=False)\n            thumbnail_url = info_dict.get('thumbnail')\n        response = requests.get(thumbnail_url, stream=True)\n        response.raise_for_status()\n        filename = sanitize_filename(info_dict.get('title', 'thumbnail')) + '.jpg'",
+        "detail": "single_file_project.downloadium",
         "documentation": {}
     },
     {
         "label": "download_subtitles",
         "kind": 2,
-        "importPath": "projeto_de_arquivo_único.index",
-        "description": "projeto_de_arquivo_único.index",
-        "peekOfCode": "def download_subtitles(yt):\n    try:\n        if yt.captions:\n            caption = yt.captions.get_by_language_code('en')\n            if caption:\n                caption_file = caption.generate_srt_captions()\n                with open(os.path.join('videos', f'{yt.title}.srt'), 'w', encoding='utf-8') as f:\n                    f.write(caption_file)\n    except Exception as e:\n        messagebox.showerror(\"Erro\", f\"Ocorreu um erro ao baixar as legendas: {e}\")",
-        "detail": "projeto_de_arquivo_único.index",
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def download_subtitles(url, output_path='subtitles', language='en'):\n    try:\n        ensure_directory_exists(output_path)\n        options = {\n            'writesubtitles': True,\n            'subtitleslangs': [language],\n            'skip_download': True,\n            'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),\n            'progress_hooks': [progress_hook]\n        }",
+        "detail": "single_file_project.downloadium",
         "documentation": {}
     },
     {
-        "label": "update_resolutions",
+        "label": "progress_hook",
         "kind": 2,
-        "importPath": "projeto_de_arquivo_único.index",
-        "description": "projeto_de_arquivo_único.index",
-        "peekOfCode": "def update_resolutions():\n    url = url_entry.get()\n    if not url:\n        messagebox.showerror(\"Erro\", \"Por favor, insira a URL do vídeo.\")\n        return\n    try:\n        yt = YouTube(url)\n        streams = yt.streams.filter(progressive=True, file_extension='mp4')\n        resolutions = [stream.resolution for stream in streams]\n        # Atualiza o menu de resoluções",
-        "detail": "projeto_de_arquivo_único.index",
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def progress_hook(d):\n    if d['status'] == 'downloading':\n        p = d['_percent_str'].strip().replace('\\x1b[0;94m', '').replace('\\x1b[0m', '')\n        progress_var.set(float(p.strip('%')))\n        app.update_idletasks()\ndef update_progress(chunk_size, total_size):\n    progress_var.set(progress_var.get() + (chunk_size / total_size) * 100)\n    app.update_idletasks()\n# Funções da interface gráfica\ndef select_directory():",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "update_progress",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def update_progress(chunk_size, total_size):\n    progress_var.set(progress_var.get() + (chunk_size / total_size) * 100)\n    app.update_idletasks()\n# Funções da interface gráfica\ndef select_directory():\n    global download_directory\n    download_directory = filedialog.askdirectory()\n    if download_directory:\n        directory_label.config(text=f\"Diretório selecionado: {download_directory}\")\ndef update_quality_menu(url):",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "select_directory",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def select_directory():\n    global download_directory\n    download_directory = filedialog.askdirectory()\n    if download_directory:\n        directory_label.config(text=f\"Diretório selecionado: {download_directory}\")\ndef update_quality_menu(url):\n    try:\n        ydl_opts = {'format': 'best'}\n        with YoutubeDL(ydl_opts) as ydl:\n            info_dict = ydl.extract_info(url, download=False)",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "update_quality_menu",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def update_quality_menu(url):\n    try:\n        ydl_opts = {'format': 'best'}\n        with YoutubeDL(ydl_opts) as ydl:\n            info_dict = ydl.extract_info(url, download=False)\n            formats = info_dict.get('formats', [])\n            resolutions = sorted(set(f\"{f['format_note']} ({f['format_id']})\" for f in formats if 'format_note' in f))\n            quality_var.set(resolutions[0] if resolutions else 'best')\n            quality_menu['menu'].delete(0, 'end')\n            for res in resolutions:",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "start_video_download",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def start_video_download():\n    url = url_entry.get()\n    quality = quality_var.get().split('(')[-1].strip(')')\n    if not url:\n        messagebox.showerror(\"Erro\", \"Por favor, insira a URL do vídeo.\")\n        return\n    progress_var.set(0)\n    message = download_video(url, output_path=download_directory, quality=quality)\n    messagebox.showinfo(\"Resultado\", message)\ndef start_thumbnail_download():",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "start_thumbnail_download",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def start_thumbnail_download():\n    url = url_entry.get()\n    if not url:\n        messagebox.showerror(\"Erro\", \"Por favor, insira a URL do vídeo.\")\n        return\n    progress_var.set(0)\n    message = download_thumbnail(url, output_path=download_directory)\n    messagebox.showinfo(\"Resultado\", message)\ndef start_subtitle_download():\n    url = url_entry.get()",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "start_subtitle_download",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def start_subtitle_download():\n    url = url_entry.get()\n    language = language_var.get()\n    if not url:\n        messagebox.showerror(\"Erro\", \"Por favor, insira a URL do vídeo.\")\n        return\n    progress_var.set(0)\n    message = download_subtitles(url, output_path=download_directory, language=language)\n    messagebox.showinfo(\"Resultado\", message)\ndef fetch_resolutions():",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "fetch_resolutions",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def fetch_resolutions():\n    url = url_entry.get()\n    if not url:\n        messagebox.showerror(\"Erro\", \"Por favor, insira a URL do vídeo.\")\n        return\n    update_quality_menu(url)\n# Configurar a interface gráfica\napp = tk.Tk()\napp.title(\"Downloadium\")\n# Variável para armazenar o diretório de download",
+        "detail": "single_file_project.downloadium",
         "documentation": {}
     },
     {
         "label": "app",
         "kind": 5,
-        "importPath": "projeto_de_arquivo_único.index",
-        "description": "projeto_de_arquivo_único.index",
-        "peekOfCode": "app = tk.Tk()\napp.title(\"Downloadium\")\ntk.Label(app, text=\"URL do vídeo:\").pack(pady=5)\nurl_entry = tk.Entry(app, width=50)\nurl_entry.pack(pady=5)\nresolution_var = tk.StringVar(app)\nresolution_menu = tk.OptionMenu(app, resolution_var, '')\nresolution_menu.pack(pady=5)\nupdate_button = tk.Button(app, text=\"Atualizar Resoluções\", command=update_resolutions)\nupdate_button.pack(pady=5)",
-        "detail": "projeto_de_arquivo_único.index",
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "app = tk.Tk()\napp.title(\"Downloadium\")\n# Variável para armazenar o diretório de download\ndownload_directory = ''\n# Entrada para a URL\ntk.Label(app, text=\"URL do vídeo:\").pack(pady=5)\nurl_entry = tk.Entry(app, width=50)\nurl_entry.pack(pady=5)\n# Botão para buscar resoluções\nfetch_resolutions_button = tk.Button(app, text=\"Buscar Resoluções\", command=fetch_resolutions)",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "download_directory",
+        "kind": 5,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "download_directory = ''\n# Entrada para a URL\ntk.Label(app, text=\"URL do vídeo:\").pack(pady=5)\nurl_entry = tk.Entry(app, width=50)\nurl_entry.pack(pady=5)\n# Botão para buscar resoluções\nfetch_resolutions_button = tk.Button(app, text=\"Buscar Resoluções\", command=fetch_resolutions)\nfetch_resolutions_button.pack(pady=5)\n# Seleção de qualidade\ntk.Label(app, text=\"Qualidade do vídeo:\").pack(pady=5)",
+        "detail": "single_file_project.downloadium",
         "documentation": {}
     },
     {
         "label": "url_entry",
         "kind": 5,
-        "importPath": "projeto_de_arquivo_único.index",
-        "description": "projeto_de_arquivo_único.index",
-        "peekOfCode": "url_entry = tk.Entry(app, width=50)\nurl_entry.pack(pady=5)\nresolution_var = tk.StringVar(app)\nresolution_menu = tk.OptionMenu(app, resolution_var, '')\nresolution_menu.pack(pady=5)\nupdate_button = tk.Button(app, text=\"Atualizar Resoluções\", command=update_resolutions)\nupdate_button.pack(pady=5)\ndownload_button = tk.Button(app, text=\"Baixar Vídeo\", command=download_video)\ndownload_button.pack(pady=20)\napp.mainloop()",
-        "detail": "projeto_de_arquivo_único.index",
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "url_entry = tk.Entry(app, width=50)\nurl_entry.pack(pady=5)\n# Botão para buscar resoluções\nfetch_resolutions_button = tk.Button(app, text=\"Buscar Resoluções\", command=fetch_resolutions)\nfetch_resolutions_button.pack(pady=5)\n# Seleção de qualidade\ntk.Label(app, text=\"Qualidade do vídeo:\").pack(pady=5)\nquality_var = tk.StringVar(value=\"best\")\nquality_menu = tk.OptionMenu(app, quality_var, \"best\")\nquality_menu.pack(pady=5)",
+        "detail": "single_file_project.downloadium",
         "documentation": {}
     },
     {
-        "label": "resolution_var",
+        "label": "fetch_resolutions_button",
         "kind": 5,
-        "importPath": "projeto_de_arquivo_único.index",
-        "description": "projeto_de_arquivo_único.index",
-        "peekOfCode": "resolution_var = tk.StringVar(app)\nresolution_menu = tk.OptionMenu(app, resolution_var, '')\nresolution_menu.pack(pady=5)\nupdate_button = tk.Button(app, text=\"Atualizar Resoluções\", command=update_resolutions)\nupdate_button.pack(pady=5)\ndownload_button = tk.Button(app, text=\"Baixar Vídeo\", command=download_video)\ndownload_button.pack(pady=20)\napp.mainloop()",
-        "detail": "projeto_de_arquivo_único.index",
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "fetch_resolutions_button = tk.Button(app, text=\"Buscar Resoluções\", command=fetch_resolutions)\nfetch_resolutions_button.pack(pady=5)\n# Seleção de qualidade\ntk.Label(app, text=\"Qualidade do vídeo:\").pack(pady=5)\nquality_var = tk.StringVar(value=\"best\")\nquality_menu = tk.OptionMenu(app, quality_var, \"best\")\nquality_menu.pack(pady=5)\n# Botão para selecionar diretório\nselect_directory_button = tk.Button(app, text=\"Selecionar Diretório\", command=select_directory)\nselect_directory_button.pack(pady=10)",
+        "detail": "single_file_project.downloadium",
         "documentation": {}
     },
     {
-        "label": "resolution_menu",
+        "label": "quality_var",
         "kind": 5,
-        "importPath": "projeto_de_arquivo_único.index",
-        "description": "projeto_de_arquivo_único.index",
-        "peekOfCode": "resolution_menu = tk.OptionMenu(app, resolution_var, '')\nresolution_menu.pack(pady=5)\nupdate_button = tk.Button(app, text=\"Atualizar Resoluções\", command=update_resolutions)\nupdate_button.pack(pady=5)\ndownload_button = tk.Button(app, text=\"Baixar Vídeo\", command=download_video)\ndownload_button.pack(pady=20)\napp.mainloop()",
-        "detail": "projeto_de_arquivo_único.index",
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "quality_var = tk.StringVar(value=\"best\")\nquality_menu = tk.OptionMenu(app, quality_var, \"best\")\nquality_menu.pack(pady=5)\n# Botão para selecionar diretório\nselect_directory_button = tk.Button(app, text=\"Selecionar Diretório\", command=select_directory)\nselect_directory_button.pack(pady=10)\n# Label para mostrar o diretório selecionado\ndirectory_label = tk.Label(app, text=\"Nenhum diretório selecionado\")\ndirectory_label.pack(pady=5)\n# Barra de progresso",
+        "detail": "single_file_project.downloadium",
         "documentation": {}
     },
     {
-        "label": "update_button",
+        "label": "quality_menu",
         "kind": 5,
-        "importPath": "projeto_de_arquivo_único.index",
-        "description": "projeto_de_arquivo_único.index",
-        "peekOfCode": "update_button = tk.Button(app, text=\"Atualizar Resoluções\", command=update_resolutions)\nupdate_button.pack(pady=5)\ndownload_button = tk.Button(app, text=\"Baixar Vídeo\", command=download_video)\ndownload_button.pack(pady=20)\napp.mainloop()",
-        "detail": "projeto_de_arquivo_único.index",
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "quality_menu = tk.OptionMenu(app, quality_var, \"best\")\nquality_menu.pack(pady=5)\n# Botão para selecionar diretório\nselect_directory_button = tk.Button(app, text=\"Selecionar Diretório\", command=select_directory)\nselect_directory_button.pack(pady=10)\n# Label para mostrar o diretório selecionado\ndirectory_label = tk.Label(app, text=\"Nenhum diretório selecionado\")\ndirectory_label.pack(pady=5)\n# Barra de progresso\nprogress_var = tk.DoubleVar()",
+        "detail": "single_file_project.downloadium",
         "documentation": {}
     },
     {
-        "label": "download_button",
+        "label": "select_directory_button",
         "kind": 5,
-        "importPath": "projeto_de_arquivo_único.index",
-        "description": "projeto_de_arquivo_único.index",
-        "peekOfCode": "download_button = tk.Button(app, text=\"Baixar Vídeo\", command=download_video)\ndownload_button.pack(pady=20)\napp.mainloop()",
-        "detail": "projeto_de_arquivo_único.index",
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "select_directory_button = tk.Button(app, text=\"Selecionar Diretório\", command=select_directory)\nselect_directory_button.pack(pady=10)\n# Label para mostrar o diretório selecionado\ndirectory_label = tk.Label(app, text=\"Nenhum diretório selecionado\")\ndirectory_label.pack(pady=5)\n# Barra de progresso\nprogress_var = tk.DoubleVar()\nprogress_bar = ttk.Progressbar(app, variable=progress_var, maximum=100)\nprogress_bar.pack(pady=10, fill=tk.X)\n# Botão para baixar vídeo",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "directory_label",
+        "kind": 5,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "directory_label = tk.Label(app, text=\"Nenhum diretório selecionado\")\ndirectory_label.pack(pady=5)\n# Barra de progresso\nprogress_var = tk.DoubleVar()\nprogress_bar = ttk.Progressbar(app, variable=progress_var, maximum=100)\nprogress_bar.pack(pady=10, fill=tk.X)\n# Botão para baixar vídeo\ndownload_video_button = tk.Button(app, text=\"Baixar Vídeo\", command=start_video_download)\ndownload_video_button.pack(pady=10)\n# Botão para baixar thumbnail",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "progress_var",
+        "kind": 5,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "progress_var = tk.DoubleVar()\nprogress_bar = ttk.Progressbar(app, variable=progress_var, maximum=100)\nprogress_bar.pack(pady=10, fill=tk.X)\n# Botão para baixar vídeo\ndownload_video_button = tk.Button(app, text=\"Baixar Vídeo\", command=start_video_download)\ndownload_video_button.pack(pady=10)\n# Botão para baixar thumbnail\ndownload_thumbnail_button = tk.Button(app, text=\"Baixar Thumbnail\", command=start_thumbnail_download)\ndownload_thumbnail_button.pack(pady=10)\n# Seleção de idioma para legendas",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "progress_bar",
+        "kind": 5,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "progress_bar = ttk.Progressbar(app, variable=progress_var, maximum=100)\nprogress_bar.pack(pady=10, fill=tk.X)\n# Botão para baixar vídeo\ndownload_video_button = tk.Button(app, text=\"Baixar Vídeo\", command=start_video_download)\ndownload_video_button.pack(pady=10)\n# Botão para baixar thumbnail\ndownload_thumbnail_button = tk.Button(app, text=\"Baixar Thumbnail\", command=start_thumbnail_download)\ndownload_thumbnail_button.pack(pady=10)\n# Seleção de idioma para legendas\ntk.Label(app, text=\"Idioma das legendas:\").pack(pady=5)",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "download_video_button",
+        "kind": 5,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "download_video_button = tk.Button(app, text=\"Baixar Vídeo\", command=start_video_download)\ndownload_video_button.pack(pady=10)\n# Botão para baixar thumbnail\ndownload_thumbnail_button = tk.Button(app, text=\"Baixar Thumbnail\", command=start_thumbnail_download)\ndownload_thumbnail_button.pack(pady=10)\n# Seleção de idioma para legendas\ntk.Label(app, text=\"Idioma das legendas:\").pack(pady=5)\nlanguage_var = tk.StringVar(value=\"en\")\nlanguage_entry = tk.Entry(app, textvariable=language_var)\nlanguage_entry.pack(pady=5)",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "download_thumbnail_button",
+        "kind": 5,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "download_thumbnail_button = tk.Button(app, text=\"Baixar Thumbnail\", command=start_thumbnail_download)\ndownload_thumbnail_button.pack(pady=10)\n# Seleção de idioma para legendas\ntk.Label(app, text=\"Idioma das legendas:\").pack(pady=5)\nlanguage_var = tk.StringVar(value=\"en\")\nlanguage_entry = tk.Entry(app, textvariable=language_var)\nlanguage_entry.pack(pady=5)\n# Botão para baixar legendas\ndownload_subtitles_button = tk.Button(app, text=\"Baixar Legendas\", command=start_subtitle_download)\ndownload_subtitles_button.pack(pady=10)",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "language_var",
+        "kind": 5,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "language_var = tk.StringVar(value=\"en\")\nlanguage_entry = tk.Entry(app, textvariable=language_var)\nlanguage_entry.pack(pady=5)\n# Botão para baixar legendas\ndownload_subtitles_button = tk.Button(app, text=\"Baixar Legendas\", command=start_subtitle_download)\ndownload_subtitles_button.pack(pady=10)\napp.mainloop()",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "language_entry",
+        "kind": 5,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "language_entry = tk.Entry(app, textvariable=language_var)\nlanguage_entry.pack(pady=5)\n# Botão para baixar legendas\ndownload_subtitles_button = tk.Button(app, text=\"Baixar Legendas\", command=start_subtitle_download)\ndownload_subtitles_button.pack(pady=10)\napp.mainloop()",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "download_subtitles_button",
+        "kind": 5,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "download_subtitles_button = tk.Button(app, text=\"Baixar Legendas\", command=start_subtitle_download)\ndownload_subtitles_button.pack(pady=10)\napp.mainloop()",
+        "detail": "single_file_project.downloadium",
         "documentation": {}
     }
 ]
