@@ -22,10 +22,12 @@ def validate_url(url):
 # Funções de download
 def download_video(url, output_path='videos', quality='best'):
     try:
+        output_path = sanitize_directory_path(output_path)
         ensure_directory_exists(output_path)
         options = {
             'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
-            'format': quality,
+            'format': f'{quality}+bestaudio/best',
+            'merge_output_format': 'mp4',
             'progress_hooks': [progress_hook]
         }
         with YoutubeDL(options) as ydl:
@@ -36,6 +38,7 @@ def download_video(url, output_path='videos', quality='best'):
 
 def download_thumbnail(url, output_path='thumbnails'):
     try:
+        output_path = sanitize_directory_path(output_path)
         ensure_directory_exists(output_path)
         ydl_opts = {'skip_download': True, 'writesubtitles': False, 'writeautomaticsub': False}
         with YoutubeDL(ydl_opts) as ydl:
@@ -56,6 +59,7 @@ def download_thumbnail(url, output_path='thumbnails'):
 
 def download_subtitles(url, output_path='subtitles', language='en'):
     try:
+        output_path = sanitize_directory_path(output_path)
         ensure_directory_exists(output_path)
         options = {
             'writesubtitles': True,
@@ -74,7 +78,10 @@ def progress_hook(d):
     if d['status'] == 'downloading':
         p = d['_percent_str'].strip().replace('\x1b[0;94m', '').replace('\x1b[0m', '')
         progress_var.set(float(p.strip('%')))
-        app.update_idletasks()
+        status_label.config(text=f"Baixando: {d['_percent_str']} a {d['_speed_str']} - Restante: {d['_eta_str']}")
+    elif d['status'] == 'finished':
+        status_label.config(text="Download concluído, convertendo...")
+    app.update_idletasks()
 
 def update_progress(chunk_size, total_size):
     progress_var.set(progress_var.get() + (chunk_size / total_size) * 100)
@@ -85,7 +92,11 @@ def select_directory():
     global download_directory
     download_directory = filedialog.askdirectory()
     if download_directory:
+        download_directory = sanitize_directory_path(download_directory)
         directory_label.config(text=f"Diretório selecionado: {download_directory}")
+
+def sanitize_directory_path(directory):
+    return os.path.abspath(directory)
 
 def update_quality_menu(url):
     try:
@@ -93,7 +104,7 @@ def update_quality_menu(url):
         with YoutubeDL(ydl_opts) as ydl:
             info_dict = ydl.extract_info(url, download=False)
             formats = info_dict.get('formats', [])
-            resolutions = sorted(set(f"{f['format_note']} ({f['format_id']})" for f in formats if 'format_note' in f))
+            resolutions = sorted(set(f"{f['format_note']} ({f['format_id']}) - {f['ext']}/{f.get('acodec', 'unknown')}" for f in formats if 'format_note' in f))
             quality_var.set(resolutions[0] if resolutions else 'best')
             quality_menu['menu'].delete(0, 'end')
             for res in resolutions:
@@ -103,11 +114,12 @@ def update_quality_menu(url):
 
 def start_video_download():
     url = url_entry.get()
-    quality = quality_var.get().split('(')[-1].strip(')')
+    quality = quality_var.get().split('(')[-1].split(')')[0]
     if not url:
         messagebox.showerror("Erro", "Por favor, insira a URL do vídeo.")
         return
     progress_var.set(0)
+    status_label.config(text="Iniciando download...")
     message = download_video(url, output_path=download_directory, quality=quality)
     messagebox.showinfo("Resultado", message)
 
@@ -117,6 +129,7 @@ def start_thumbnail_download():
         messagebox.showerror("Erro", "Por favor, insira a URL do vídeo.")
         return
     progress_var.set(0)
+    status_label.config(text="Iniciando download...")
     message = download_thumbnail(url, output_path=download_directory)
     messagebox.showinfo("Resultado", message)
 
@@ -127,6 +140,7 @@ def start_subtitle_download():
         messagebox.showerror("Erro", "Por favor, insira a URL do vídeo.")
         return
     progress_var.set(0)
+    status_label.config(text="Iniciando download...")
     message = download_subtitles(url, output_path=download_directory, language=language)
     messagebox.showinfo("Resultado", message)
 
@@ -171,6 +185,10 @@ directory_label.pack(pady=5)
 progress_var = tk.DoubleVar()
 progress_bar = ttk.Progressbar(app, variable=progress_var, maximum=100)
 progress_bar.pack(pady=10, fill=tk.X)
+
+# Label para mostrar o status do download
+status_label = tk.Label(app, text="")
+status_label.pack(pady=5)
 
 # Botão para baixar vídeo
 download_video_button = tk.Button(app, text="Baixar Vídeo", command=start_video_download)
