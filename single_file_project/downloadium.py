@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import messagebox, filedialog
 from tkinter import ttk
 from yt_dlp import YoutubeDL
+import re
 
 # Funções utilitárias
 def ensure_directory_exists(directory):
@@ -20,107 +21,105 @@ def validate_url(url):
     return url.startswith("http://") or url.startswith("https://")
 
 # Funções de download
-def download_video(url, output_path='videos', quality='best'):
+def download_video(url, output_path, quality):
     try:
-        output_path = sanitize_directory_path(output_path)
         ensure_directory_exists(output_path)
         options = {
             'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
             'format': f'{quality}+bestaudio/best',
             'merge_output_format': 'mp4',
-            'progress_hooks': [progress_hook]
+            'progress_hooks': [progress_hook],
+            'nocolor': True  # Desativa a coloração ANSI
         }
         with YoutubeDL(options) as ydl:
             ydl.download([url])
-        return f"Video downloaded successfully to {output_path}"
+        return f"Vídeo baixado com sucesso em: {output_path}"
     except Exception as e:
-        return f"Error downloading video: {str(e)}"
+        return f"Erro ao baixar vídeo: {str(e)}"
 
-def download_thumbnail(url, output_path='thumbnails'):
+def download_thumbnail(url, output_path):
     try:
-        output_path = sanitize_directory_path(output_path)
         ensure_directory_exists(output_path)
-        ydl_opts = {'skip_download': True, 'writesubtitles': False, 'writeautomaticsub': False}
-        with YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(url, download=False)
-            thumbnail_url = info_dict.get('thumbnail')
+        with YoutubeDL({'skip_download': True, 'nocolor': True}) as ydl:
+            info = ydl.extract_info(url, download=False)
+            thumbnail_url = info['thumbnail']
+            title = sanitize_filename(info.get('title', 'thumbnail'))
+        
         response = requests.get(thumbnail_url, stream=True)
         response.raise_for_status()
-        filename = sanitize_filename(info_dict.get('title', 'thumbnail')) + '.jpg'
-        thumbnail_path = os.path.join(output_path, filename)
-        total_length = int(response.headers.get('content-length'))
-        with open(thumbnail_path, 'wb') as f:
+        file_path = os.path.join(output_path, f"{title}.jpg")
+        
+        with open(file_path, 'wb') as f:
             for chunk in response.iter_content(1024):
                 f.write(chunk)
-                update_progress(len(chunk), total_length)
-        return f"Thumbnail downloaded successfully to {thumbnail_path}"
+        
+        return f"Thumbnail baixada com sucesso em: {file_path}"
     except Exception as e:
-        return f"Error downloading thumbnail: {str(e)}"
+        return f"Erro ao baixar thumbnail: {str(e)}"
 
-def download_subtitles(url, output_path='subtitles', language='en'):
+def download_subtitles(url, output_path, language):
     try:
-        output_path = sanitize_directory_path(output_path)
         ensure_directory_exists(output_path)
         options = {
             'writesubtitles': True,
             'subtitleslangs': [language],
             'skip_download': True,
             'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
-            'progress_hooks': [progress_hook]
+            'nocolor': True  # Desativa a coloração ANSI
         }
         with YoutubeDL(options) as ydl:
             ydl.download([url])
-        return f"Subtitles downloaded successfully to {output_path}"
+        return f"Legendas baixadas com sucesso em: {output_path}"
     except Exception as e:
-        return f"Error downloading subtitles: {str(e)}"
+        return f"Erro ao baixar legendas: {str(e)}"
 
 def progress_hook(d):
     if d['status'] == 'downloading':
-        p = d['_percent_str'].strip().replace('\x1b[0;94m', '').replace('\x1b[0m', '')
-        progress_var.set(float(p.strip('%')))
-        status_label.config(text=f"Baixando: {d['_percent_str']} a {d['_speed_str']} - Restante: {d['_eta_str']}")
+        progress_str = re.sub(r'\x1b\[[0-9;]*m', '', d['_percent_str'])  # Remove caracteres de escape ANSI
+        progress = float(progress_str.strip('%'))
+        progress_var.set(progress)
+        status_label.config(text=f"Baixando... {progress_str} | {d['_speed_str']} | ETA: {d['_eta_str']}")
     elif d['status'] == 'finished':
-        status_label.config(text="Download concluído, convertendo...")
-    app.update_idletasks()
-
-def update_progress(chunk_size, total_size):
-    progress_var.set(progress_var.get() + (chunk_size / total_size) * 100)
-    app.update_idletasks()
+        status_label.config(text="Download concluído!")
 
 # Funções da interface gráfica
 def select_directory():
     global download_directory
     download_directory = filedialog.askdirectory()
     if download_directory:
-        download_directory = sanitize_directory_path(download_directory)
-        directory_label.config(text=f"Diretório selecionado: {download_directory}")
+        directory_label.config(text=f"Diretório: {download_directory}")
 
-def sanitize_directory_path(directory):
-    return os.path.abspath(directory)
-
-def update_quality_menu(url):
+def load_resolutions():
+    url = url_entry.get()
+    if not validate_url(url):
+        messagebox.showerror("Erro", "Por favor, insira uma URL válida.")
+        return
+    
     try:
-        ydl_opts = {'format': 'best'}
-        with YoutubeDL(ydl_opts) as ydl:
-            info_dict = ydl.extract_info(url, download=False)
-            formats = info_dict.get('formats', [])
-            resolutions = sorted(set(f"{f['format_note']} ({f['format_id']}) - {f['ext']}/{f.get('acodec', 'unknown')}" for f in formats if 'format_note' in f))
-            quality_var.set(resolutions[0] if resolutions else 'best')
-            quality_menu['menu'].delete(0, 'end')
-            for res in resolutions:
-                quality_menu['menu'].add_command(label=res, command=tk._setit(quality_var, res))
+        with YoutubeDL({'skip_download': True, 'nocolor': True}) as ydl:
+            info = ydl.extract_info(url, download=False)
+            formats = info.get('formats', [])
+            resolutions = []
+            for f in formats:
+                if f.get('vcodec') != 'none':  # Apenas formatos de vídeo
+                    resolution = f.get('format_note')
+                    ext = f.get('ext')
+                    if resolution and ext:
+                        resolutions.append(f"{resolution} ({ext})")
+            resolution_var.set(resolutions[0] if resolutions else "N/A")
+            resolution_combobox['values'] = resolutions
     except Exception as e:
-        messagebox.showerror("Erro", f"Erro ao obter resoluções: {str(e)}")
+        messagebox.showerror("Erro", f"Erro ao carregar resoluções: {str(e)}")
 
 def start_video_download():
     url = url_entry.get()
-    quality = quality_var.get().split('(')[-1].split(')')[0]
+    quality = resolution_var.get().split(' ')[0]  # Pega a resolução selecionada
     if not url:
         messagebox.showerror("Erro", "Por favor, insira a URL do vídeo.")
         return
     progress_var.set(0)
     status_label.config(text="Iniciando download...")
-    message = download_video(url, output_path=download_directory, quality=quality)
+    message = download_video(url, download_directory, quality)
     messagebox.showinfo("Resultado", message)
 
 def start_thumbnail_download():
@@ -130,7 +129,7 @@ def start_thumbnail_download():
         return
     progress_var.set(0)
     status_label.config(text="Iniciando download...")
-    message = download_thumbnail(url, output_path=download_directory)
+    message = download_thumbnail(url, download_directory)
     messagebox.showinfo("Resultado", message)
 
 def start_subtitle_download():
@@ -141,71 +140,60 @@ def start_subtitle_download():
         return
     progress_var.set(0)
     status_label.config(text="Iniciando download...")
-    message = download_subtitles(url, output_path=download_directory, language=language)
+    message = download_subtitles(url, download_directory, language)
     messagebox.showinfo("Resultado", message)
-
-def fetch_resolutions():
-    url = url_entry.get()
-    if not url:
-        messagebox.showerror("Erro", "Por favor, insira a URL do vídeo.")
-        return
-    update_quality_menu(url)
 
 # Configurar a interface gráfica
 app = tk.Tk()
 app.title("Downloadium")
+app.geometry("600x600")
 
-# Variável para armazenar o diretório de download
-download_directory = ''
-
-# Entrada para a URL
-tk.Label(app, text="URL do vídeo:").pack(pady=5)
-url_entry = tk.Entry(app, width=50)
-url_entry.pack(pady=5)
-
-# Botão para buscar resoluções
-fetch_resolutions_button = tk.Button(app, text="Buscar Resoluções", command=fetch_resolutions)
-fetch_resolutions_button.pack(pady=5)
-
-# Seleção de qualidade
-tk.Label(app, text="Qualidade do vídeo:").pack(pady=5)
+# Variáveis globais
+download_directory = os.getcwd()
+progress_var = tk.DoubleVar()
 quality_var = tk.StringVar(value="best")
-quality_menu = tk.OptionMenu(app, quality_var, "best")
-quality_menu.pack(pady=5)
+language_var = tk.StringVar(value="en")
+resolution_var = tk.StringVar()
 
-# Botão para selecionar diretório
-select_directory_button = tk.Button(app, text="Selecionar Diretório", command=select_directory)
-select_directory_button.pack(pady=10)
+# Frames
+url_frame = ttk.LabelFrame(app, text="URL do Vídeo")
+url_frame.pack(fill="x", padx=10, pady=5)
 
-# Label para mostrar o diretório selecionado
-directory_label = tk.Label(app, text="Nenhum diretório selecionado")
-directory_label.pack(pady=5)
+directory_frame = ttk.LabelFrame(app, text="Configurações")
+directory_frame.pack(fill="x", padx=10, pady=5)
+
+progress_frame = ttk.Frame(app)
+progress_frame.pack(fill="x", padx=10, pady=5)
+
+action_frame = ttk.Frame(app)
+action_frame.pack(fill="x", padx=10, pady=5)
+
+# Entrada para URL
+ttk.Label(url_frame, text="Insira a URL:").pack(side="left", padx=5, pady=5)
+url_entry = ttk.Entry(url_frame, width=50)
+url_entry.pack(side="left", padx=5, pady=5)
+ttk.Button(url_frame, text="Carregar", command=load_resolutions).pack(side="left", padx=5, pady=5)
+
+# Diretório
+ttk.Label(directory_frame, text="Diretório de Download:").pack(side="left", padx=5, pady=5)
+directory_label = ttk.Label(directory_frame, text=download_directory)
+directory_label.pack(side="left", padx=5, pady=5)
+ttk.Button(directory_frame, text="Selecionar", command=select_directory).pack(side="right", padx=5, pady=5)
+
+# Seleção de Resolução
+ttk.Label(directory_frame, text="Resolução:").pack(side="left", padx=5, pady=5)
+resolution_combobox = ttk.Combobox(directory_frame, textvariable=resolution_var, state="readonly")
+resolution_combobox.pack(side="left", padx=5, pady=5)
 
 # Barra de progresso
-progress_var = tk.DoubleVar()
-progress_bar = ttk.Progressbar(app, variable=progress_var, maximum=100)
-progress_bar.pack(pady=10, fill=tk.X)
-
-# Label para mostrar o status do download
-status_label = tk.Label(app, text="")
+progress_bar = ttk.Progressbar(progress_frame, variable=progress_var, maximum=100)
+progress_bar.pack(fill="x", padx=5, pady=5)
+status_label = ttk.Label(progress_frame, text="Pronto para iniciar!")
 status_label.pack(pady=5)
 
-# Botão para baixar vídeo
-download_video_button = tk.Button(app, text="Baixar Vídeo", command=start_video_download)
-download_video_button.pack(pady=10)
-
-# Botão para baixar thumbnail
-download_thumbnail_button = tk.Button(app, text="Baixar Thumbnail", command=start_thumbnail_download)
-download_thumbnail_button.pack(pady=10)
-
-# Seleção de idioma para legendas
-tk.Label(app, text="Idioma das legendas:").pack(pady=5)
-language_var = tk.StringVar(value="en")
-language_entry = tk.Entry(app, textvariable=language_var)
-language_entry.pack(pady=5)
-
-# Botão para baixar legendas
-download_subtitles_button = tk.Button(app, text="Baixar Legendas", command=start_subtitle_download)
-download_subtitles_button.pack(pady=10)
+# Botões de Ação
+ttk.Button(action_frame, text="Baixar Vídeo", command=start_video_download).pack(side="left", padx=5, pady=5)
+ttk.Button(action_frame, text="Baixar Thumbnail", command=start_thumbnail_download).pack(side="left", padx=5, pady=5)
+ttk.Button(action_frame, text="Baixar Legendas", command=start_subtitle_download).pack(side="left", padx=5, pady=5)
 
 app.mainloop()
