@@ -1,3 +1,4 @@
 pytube
 requests
 tkinter
+pillow

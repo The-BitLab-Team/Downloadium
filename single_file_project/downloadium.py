@@ -5,12 +5,13 @@ from tkinter import messagebox, filedialog
 from tkinter import ttk
 from yt_dlp import YoutubeDL
 import re
+from PIL import Image, ImageTk
+from io import BytesIO
 
 class DownloadiumApp:
     def __init__(self, root):
         self.root = root
         self.root.title("Downloadium")
-        self.root.geometry("600x600")
 
         self.download_directory = os.getcwd()
         self.progress_var = tk.DoubleVar()
@@ -34,8 +35,11 @@ class DownloadiumApp:
         action_frame.pack(fill="x", padx=10, pady=5)
 
         ttk.Label(url_frame, text="Insira a URL:").pack(side="left", padx=5, pady=5)
+        
         self.url_entry = ttk.Entry(url_frame, width=50)
         self.url_entry.pack(side="left", padx=5, pady=5)
+        self.url_entry.bind("<KeyRelease>", self.on_url_change)  # Monitora mudanças na URL
+
         ttk.Button(url_frame, text="Carregar", command=self.load_resolutions).pack(side="left", padx=5, pady=5)
 
         ttk.Label(directory_frame, text="Diretório de Download:").pack(side="left", padx=5, pady=5)
@@ -47,6 +51,9 @@ class DownloadiumApp:
         self.resolution_combobox = ttk.Combobox(directory_frame, textvariable=self.resolution_var, state="readonly")
         self.resolution_combobox.pack(side="left", padx=5, pady=5)
 
+        self.thumbnail_label = ttk.Label(directory_frame)
+        self.thumbnail_label.pack(side="left", padx=5, pady=5)
+
         progress_bar = ttk.Progressbar(progress_frame, variable=self.progress_var, maximum=100)
         progress_bar.pack(fill="x", padx=5, pady=5)
         self.status_label = ttk.Label(progress_frame, text="Pronto para iniciar!")
@@ -55,6 +62,18 @@ class DownloadiumApp:
         ttk.Button(action_frame, text="Baixar Vídeo", command=self.start_video_download).pack(side="left", padx=5, pady=5)
         ttk.Button(action_frame, text="Baixar Thumbnail", command=self.start_thumbnail_download).pack(side="left", padx=5, pady=5)
         ttk.Button(action_frame, text="Baixar Legendas", command=self.start_subtitle_download).pack(side="left", padx=5, pady=5)
+
+        self.url_update_job = None  # Variável para evitar múltiplas chamadas seguidas
+
+        self.root.update_idletasks()
+        self.root.minsize(self.root.winfo_width(), self.root.winfo_height())
+        self.root.geometry("")
+
+    def on_url_change(self, event):
+        """ Aguarda 1 segundo após o usuário parar de digitar antes de carregar os dados. """
+        if self.url_update_job:
+            self.root.after_cancel(self.url_update_job)  # Cancela o carregamento anterior se ainda estiver pendente
+        self.url_update_job = self.root.after(1000, self.load_resolutions)
 
     def select_directory(self):
         self.download_directory = filedialog.askdirectory()
@@ -74,6 +93,16 @@ class DownloadiumApp:
                 resolutions = [f"{f.get('format_note')} ({f.get('format_id')}) - {f.get('ext')}/{f.get('acodec')}" for f in formats if f.get('vcodec') != 'none']
                 self.resolution_var.set(resolutions[0] if resolutions else "N/A")
                 self.resolution_combobox['values'] = resolutions
+
+                # Load thumbnail
+                thumbnail_url = info.get('thumbnail')
+                if thumbnail_url:
+                    response = requests.get(thumbnail_url)
+                    image_data = response.content
+                    image = Image.open(BytesIO(image_data))
+                    image.thumbnail((100, 100))
+                    self.thumbnail_image = ImageTk.PhotoImage(image)
+                    self.thumbnail_label.config(image=self.thumbnail_image)
         except Exception as e:
             messagebox.showerror("Erro", f"Erro ao carregar resoluções: {str(e)}")
 

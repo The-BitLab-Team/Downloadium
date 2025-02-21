@@ -205,6 +205,30 @@
         "documentation": {}
     },
     {
+        "label": "Image",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "ImageTk",
+        "importPath": "PIL",
+        "description": "PIL",
+        "isExtraImport": true,
+        "detail": "PIL",
+        "documentation": {}
+    },
+    {
+        "label": "BytesIO",
+        "importPath": "io",
+        "description": "io",
+        "isExtraImport": true,
+        "detail": "io",
+        "documentation": {}
+    },
+    {
         "label": "download_video",
         "kind": 2,
         "importPath": "Downloadium.backend.downloader",
@@ -425,7 +449,7 @@
         "kind": 6,
         "importPath": "single_file_project.downloadium",
         "description": "single_file_project.downloadium",
-        "peekOfCode": "class DownloadiumApp:\n    def __init__(self, root):\n        self.root = root\n        self.root.title(\"Downloadium\")\n        self.root.geometry(\"600x600\")\n        self.download_directory = os.getcwd()\n        self.progress_var = tk.DoubleVar()\n        self.quality_var = tk.StringVar(value=\"best\")\n        self.language_var = tk.StringVar(value=\"en\")\n        self.resolution_var = tk.StringVar()",
+        "peekOfCode": "class DownloadiumApp:\n    def __init__(self, root):\n        self.root = root\n        self.root.title(\"Downloadium\")\n        self.download_directory = os.getcwd()\n        self.progress_var = tk.DoubleVar()\n        self.quality_var = tk.StringVar(value=\"best\")\n        self.language_var = tk.StringVar(value=\"en\")\n        self.resolution_var = tk.StringVar()\n        self.create_widgets()",
         "detail": "single_file_project.downloadium",
         "documentation": {}
     },
