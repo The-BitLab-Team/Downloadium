@@ -159,12 +159,12 @@ def sanitize_filename(filename):
 
 def validate_url(url):
     regex = re.compile(
-        r'^(?:http|ftp)s?://'  # http:// ou https://
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domínio...
-        r'localhost|'  # localhost...
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'  # ...ou endereço IP
-        r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'  # ...ou endereço IPv6
-        r'(?::\d+)?'  # porta opcional
+        r'^(?:http|ftp)s?://' 
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  
+        r'localhost|'  
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'  
+        r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'  
+        r'(?::\d+)?'  
         r'(?:/?|[/?]\S+)$', re.IGNORECASE)
     return re.match(regex, url) is not None
 
