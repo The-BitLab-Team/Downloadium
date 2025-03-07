@@ -158,7 +158,15 @@ def sanitize_filename(filename):
     return filename
 
 def validate_url(url):
-    return url.startswith("http://") or url.startswith("https://")
+    regex = re.compile(
+        r'^(?:http|ftp)s?://'  # http:// ou https://
+        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  # domínio...
+        r'localhost|'  # localhost...
+        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'  # ...ou endereço IP
+        r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'  # ...ou endereço IPv6
+        r'(?::\d+)?'  # porta opcional
+        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
+    return re.match(regex, url) is not None
 
 def download_video(url, output_path, quality, progress_hook):
     try:
