@@ -1,0 +1,1 @@
+2025-04-03 14:21:18,869 - ERROR - Erro ao carregar thumbnail: module 'PIL.Image' has no attribute 'ANTIALIAS'
