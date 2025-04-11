@@ -31,18 +31,19 @@ def ensure_directory_exists(path):
     if not os.path.exists(path):
         os.makedirs(path)
 
-def download_video(url, resolution, output_path, progress_hook=None, cookies=None):
-    ensure_directory_exists(output_path)
-    ydl_opts = {
-        'format': f'bestvideo[format_note={resolution}]+bestaudio/best[format_note={resolution}]',
-        'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
-        'progress_hooks': [progress_hook] if progress_hook else [],
-        'noplaylist': True,
-        'nocolor': True
-    }
-    if cookies:
-        ydl_opts['cookiefile'] = cookies
+def download_video(url, resolution, output_path, progress_hook=None, cookies=None, video_format="mp4"):
     try:
+        ensure_directory_exists(output_path)
+        ydl_opts = {
+            'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
+            'format': f'{resolution}+bestaudio/best[ext={video_format}]',  # Usa o formato selecionado
+            'merge_output_format': video_format,  # Define o formato final como mp4 por padrão
+            'progress_hooks': [progress_hook] if progress_hook else [],
+            'noplaylist': True,
+            'nocolor': True
+        }
+        if cookies:
+            ydl_opts['cookiefile'] = cookies
         with YoutubeDL(ydl_opts) as ydl:
             ydl.download([url])
         return "Download finalizado com sucesso!"
