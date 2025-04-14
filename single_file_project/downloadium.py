@@ -36,8 +36,8 @@ def download_video(url, resolution, output_path, progress_hook=None, cookies=Non
         ensure_directory_exists(output_path)
         ydl_opts = {
             'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
-            'format': f'{resolution}+bestaudio/best[ext={video_format}]',  # Usa o formato selecionado
-            'merge_output_format': video_format,  # Define o formato final como mp4 por padrão
+            'format': f'bestvideo[format_note={resolution}]+bestaudio/best[ext={video_format}]',
+            'merge_output_format': video_format,
             'progress_hooks': [progress_hook] if progress_hook else [],
             'noplaylist': True,
             'nocolor': True
@@ -84,13 +84,13 @@ class DownloadiumApp(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title("Downloadium")
-        self.geometry("600x480")
+        self.geometry("600x500")
 
         self.url_var = tk.StringVar()
         self.output_path_var = tk.StringVar(value=os.path.expanduser("~"))
         self.resolution_var = tk.StringVar()
+        self.format_var = tk.StringVar(value="mp4")
         self.cookie_path_var = tk.StringVar()
-
         self.progress_var = tk.DoubleVar()
 
         self.thumbnail_url = None
@@ -117,6 +117,12 @@ class DownloadiumApp(tk.Tk):
         self.resolution_cb.pack()
 
         ttk.Button(frame, text="Carregar Resoluções", command=self.load_resolutions).pack(pady=5)
+
+        # Seletor de formato
+        ttk.Label(frame, text="Formato de vídeo:").pack(anchor=tk.W, pady=(10, 0))
+        format_cb = ttk.Combobox(frame, textvariable=self.format_var, values=["mp4", "mkv", "webm"], state="readonly")
+        format_cb.pack()
+        format_cb.current(0)
 
         self.thumbnail_label = ttk.Label(frame)
         self.thumbnail_label.pack(pady=10)
@@ -185,7 +191,8 @@ class DownloadiumApp(tk.Tk):
             self.resolution_var.get(),
             self.output_path_var.get(),
             progress_hook=self.progress_hook,
-            cookies=self.cookie_path_var.get() or None
+            cookies=self.cookie_path_var.get() or None,
+            video_format=self.format_var.get()
         )
         messagebox.showinfo("Download", result)
 
