@@ -4,9 +4,9 @@ from tkinter import ttk, filedialog, messagebox
 from PIL import Image, ImageTk
 import requests
 from io import BytesIO
-import threading # Import para multithreading
+import threading
 from yt_dlp import YoutubeDL
-from yt_dlp.utils import DownloadError, ExtractorError # Tipos de erro mais específicos
+from yt_dlp.utils import DownloadError, ExtractorError
 
 # --- Funções auxiliares ---
 
@@ -244,13 +244,17 @@ class DownloadiumApp(tk.Tk):
         self.format_var = tk.StringVar(value="mp4") # Padrão para mp4
         self.cookie_path_var = tk.StringVar()
         self.progress_var = tk.DoubleVar(value=0.0) # Inicializa o progresso para 0
-        self.status_text_var = tk.StringVar(value="Aguardando URL do vídeo...")
+        
+        # Mensagem de status inicial, orientando o usuário
+        self.status_text_var = tk.StringVar(value="Por favor, insira a URL do vídeo e clique em 'Carregar Resoluções'.")
 
         self.thumbnail_url = None
         self.thumbnail_image = None # Mantém uma referência para evitar a coleta de lixo
 
         self.create_widgets()
-        self.update_download_button_state(False) # Estado inicial: botões desativados
+        # Os botões de download são desativados inicialmente, pois as informações do vídeo (resoluções)
+        # ainda não foram carregadas. Eles serão ativados após o sucesso do carregamento de resoluções.
+        self.update_download_button_state(False)
 
     def create_widgets(self):
         """Cria e organiza todos os widgets da interface."""
@@ -262,7 +266,8 @@ class DownloadiumApp(tk.Tk):
         ttk.Label(main_frame, text="URL do vídeo:").pack(anchor=tk.W, pady=(0, 5))
         url_entry = ttk.Entry(main_frame, textvariable=self.url_var, width=80)
         url_entry.pack(fill=tk.X, ipady=3)
-        url_entry.bind("<Return>", lambda event: self.load_resolutions_threaded()) # Carrega ao pressionar Enter
+        # Associa a tecla Enter ao carregamento de resoluções para conveniência do usuário
+        url_entry.bind("<Return>", lambda event: self.load_resolutions_threaded())
 
         # Caminho de saída
         ttk.Label(main_frame, text="Caminho de saída:").pack(anchor=tk.W, pady=(10, 5))
@@ -278,6 +283,7 @@ class DownloadiumApp(tk.Tk):
         self.resolution_cb = ttk.Combobox(resolution_frame, textvariable=self.resolution_var, state="readonly", width=30)
         self.resolution_cb.pack(side=tk.LEFT, fill=tk.X, expand=True, ipady=3)
         self.resolution_cb.set("Selecione...") # Texto de placeholder inicial
+        # Este botão é sempre clicável para iniciar o processo de carregamento de resoluções
         ttk.Button(resolution_frame, text="Carregar Resoluções", command=self.load_resolutions_threaded).pack(side=tk.LEFT, padx=(5, 0))
 
         # Seletor de formato de vídeo
@@ -288,8 +294,8 @@ class DownloadiumApp(tk.Tk):
 
         # Exibição da thumbnail
         self.thumbnail_label = ttk.Label(main_frame, text="Preview da Thumbnail", relief="solid", borderwidth=1, anchor=tk.CENTER)
-        self.thumbnail_label.pack(pady=15, padx=10, fill=tk.BOTH, expand=False, ipadx=75, ipady=50)  # Ajusta o tamanho visual com padding
-        # Removido: self.thumbnail_label.config(width=150, height=100) # Tamanho fixo para a área da thumbnail
+        # Removido tamanho fixo, usando ipadx/ipady para padding e fill/expand para adaptabilidade
+        self.thumbnail_label.pack(pady=15, padx=10, fill=tk.BOTH, expand=False, ipadx=75, ipady=50)
 
         # Caminho dos Cookies
         ttk.Label(main_frame, text="Arquivo de Cookies (opcional):").pack(anchor=tk.W, pady=(5, 5))
@@ -299,7 +305,7 @@ class DownloadiumApp(tk.Tk):
         ttk.Button(cookie_frame, text="Procurar Arquivo", command=self.choose_cookie_path).pack(side=tk.LEFT, padx=(5, 0))
 
         # Barra de Progresso e Status
-        progress_frame = ttk.Frame(self) # Anexa a self, não a main_frame, para melhor controle de layout
+        progress_frame = ttk.Frame(self)
         progress_frame.pack(fill=tk.X, padx=15, pady=(0, 5))
         self.progress_bar = ttk.Progressbar(progress_frame, variable=self.progress_var, maximum=100, mode='determinate')
         self.progress_bar.pack(fill=tk.X, pady=5)
@@ -307,14 +313,17 @@ class DownloadiumApp(tk.Tk):
         self.status_label.pack(anchor=tk.W, pady=(0, 5))
 
         # Botões de Ação
-        button_frame = ttk.Frame(self) # Anexa a self
+        button_frame = ttk.Frame(self)
         button_frame.pack(pady=10)
+        # Referências aos botões para poder habilitar/desabilitar
         self.download_video_btn = ttk.Button(button_frame, text="Baixar Vídeo", command=self.download_video_threaded)
         self.download_video_btn.pack(side=tk.LEFT, padx=10)
         self.download_thumbnail_btn = ttk.Button(button_frame, text="Baixar Thumbnail", command=self.download_thumbnail_threaded)
         self.download_thumbnail_btn.pack(side=tk.LEFT, padx=10)
         self.download_subtitle_btn = ttk.Button(button_frame, text="Baixar Legenda (en)", command=self.download_subtitle_threaded)
         self.download_subtitle_btn.pack(side=tk.LEFT, padx=10)
+        self.download_all_btn = ttk.Button(button_frame, text="Download Completo", command=self.download_all_threaded)
+        self.download_all_btn.pack(side=tk.LEFT, padx=10)
 
     def choose_output_path(self):
         """Abre uma caixa de diálogo para escolher o diretório de saída."""
@@ -334,16 +343,18 @@ class DownloadiumApp(tk.Tk):
         self.status_label.config(foreground=color)
         self.update_idletasks()
 
-    def update_download_button_state(self, enable=False):
+    def update_download_button_state(self, enable=True):
         """Habilita ou desabilita os botões de download."""
         if enable:
             self.download_video_btn.config(state=tk.NORMAL)
             self.download_thumbnail_btn.config(state=tk.NORMAL)
             self.download_subtitle_btn.config(state=tk.NORMAL)
+            self.download_all_btn.config(state=tk.NORMAL)
         else:
             self.download_video_btn.config(state=tk.DISABLED)
             self.download_thumbnail_btn.config(state=tk.DISABLED)
             self.download_subtitle_btn.config(state=tk.DISABLED)
+            self.download_all_btn.config(state=tk.DISABLED)
 
     def load_resolutions_threaded(self):
         """Inicia o carregamento de resoluções em uma nova thread."""
@@ -355,7 +366,7 @@ class DownloadiumApp(tk.Tk):
             self.resolution_cb.set("Selecione...")
             self.thumbnail_label.config(image='', text="Preview da Thumbnail")
             self.thumbnail_image = None
-            self.update_download_button_state(False)
+            self.update_download_button_state(False) # Garante que os botões fiquem desativados em caso de URL inválida
             return
 
         self.update_status("Carregando resoluções e thumbnail...", 'orange')
@@ -384,11 +395,13 @@ class DownloadiumApp(tk.Tk):
             self.resolution_cb.set("Nenhuma resolução encontrada.")
             self.thumbnail_label.config(image='', text="Preview da Thumbnail")
             self.thumbnail_image = None
+            self.update_download_button_state(False) # Desativa os botões em caso de erro
+
         else:
             if resolutions:
                 self.resolution_cb['values'] = resolutions
                 self.resolution_cb.set(resolutions[0]) # Seleciona a primeira resolução
-                self.update_status("Resoluções carregadas com sucesso!", 'green')
+                self.update_status("Resoluções carregadas com sucesso! Agora você pode baixar.", 'green')
                 self.update_download_button_state(True) # Ativa os botões de download
             else:
                 self.resolution_cb['values'] = []
@@ -424,7 +437,6 @@ class DownloadiumApp(tk.Tk):
             if not self.thumbnail_image:
                 self.thumbnail_label.config(text="Preview da Thumbnail")
 
-
     def progress_hook(self, d):
         """Hook de progresso para yt-dlp."""
         if d['status'] == 'downloading':
@@ -457,7 +469,6 @@ class DownloadiumApp(tk.Tk):
             self.after(0, self.progress_var.set, 0)
             self.after(0, self.update_status, f"Erro no download: {d.get('error', 'Desconhecido')}", 'red')
             messagebox.showerror("Erro de Download", f"Ocorreu um erro durante o download: {d.get('error', 'Detalhes desconhecidos.')}")
-
 
     def download_video_threaded(self):
         """Inicia o download do vídeo em uma nova thread."""
@@ -506,7 +517,7 @@ class DownloadiumApp(tk.Tk):
         if not self.thumbnail_url:
             messagebox.showwarning("Aviso", "Nenhuma thumbnail carregada para download.")
             return
-        
+            
         output_path = self.output_path_var.get()
         if not output_path:
             messagebox.showwarning("Entrada Ausente", "Por favor, selecione um caminho de saída para a thumbnail.")
@@ -566,7 +577,62 @@ class DownloadiumApp(tk.Tk):
             messagebox.showerror("Erro na Legenda", result_message)
         self.update_download_button_state(True)
 
+    def download_all_threaded(self):
+        """Inicia o download completo (vídeo, thumbnail e legenda) em uma nova thread."""
+        url = self.url_var.get()
+        resolution = self.resolution_var.get()
+        output_path = self.output_path_var.get()
+        video_format = self.format_var.get()
+        cookies = self.cookie_path_var.get() or None
+
+        if not url:
+            messagebox.showwarning("Entrada Ausente", "Por favor, insira a URL do vídeo.")
+            return
+        if not resolution or resolution == "Selecione...":
+            messagebox.showwarning("Entrada Ausente", "Por favor, selecione uma resolução.")
+            return
+        if not output_path:
+            messagebox.showwarning("Entrada Ausente", "Por favor, selecione um caminho de saída.")
+            return
+
+        self.update_status("Iniciando download completo...", 'blue')
+        self.progress_var.set(0)
+        self.update_download_button_state(False)
+
+        threading.Thread(
+            target=self._download_all_task,
+            args=(url, resolution, output_path, self.progress_hook, cookies, video_format, self.thumbnail_url),
+            daemon=True
+        ).start()
+
+    def _download_all_task(self, url, resolution, output_path, progress_hook, cookies, video_format, thumbnail_url):
+        """Executa o download completo em thread."""
+        # Baixa o vídeo
+        video_result = download_video(url, resolution, output_path, progress_hook, cookies, video_format)
+        # Baixa a thumbnail (se disponível)
+        if thumbnail_url:
+            thumb_result = download_thumbnail(thumbnail_url, output_path)
+        else:
+            thumb_result = "Nenhuma thumbnail disponível."
+        # Baixa a legenda (padrão: en)
+        subtitle_result = download_subtitles(url, output_path, "en")
+
+        # Junta os resultados e atualiza a interface
+        result_message = f"{video_result}\n{thumb_result}\n{subtitle_result}"
+        self.after(0, self._post_download_all_task_gui, result_message)
+
+    def _post_download_all_task_gui(self, result_message):
+        """Atualiza a GUI após o download completo."""
+        if "finalizado com sucesso" in result_message and "Nenhuma thumbnail disponível" not in result_message and "não disponível para este vídeo" not in result_message:
+            self.update_status("Download completo finalizado!", 'green')
+            messagebox.showinfo("Download Completo", result_message)
+            self.progress_var.set(100)
+        else:
+            self.update_status("Algum item falhou no download ou não estava disponível.", 'red')
+            messagebox.showerror("Erro no Download Completo", result_message)
+            self.progress_var.set(0)
+        self.update_download_button_state(True)
+
 if __name__ == '__main__':
     app = DownloadiumApp()
     app.mainloop()
-
