@@ -350,6 +350,23 @@
         "documentation": {}
     },
     {
+        "label": "logging",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "logging",
+        "description": "logging",
+        "detail": "logging",
+        "documentation": {}
+    },
+    {
+        "label": "urlparse",
+        "importPath": "urllib.parse",
+        "description": "urllib.parse",
+        "isExtraImport": true,
+        "detail": "urllib.parse",
+        "documentation": {}
+    },
+    {
         "label": "download_video",
         "kind": 2,
         "importPath": "Downloadium.backend.downloader",
@@ -642,7 +659,25 @@
         "kind": 6,
         "importPath": "single_file_project.downloadium",
         "description": "single_file_project.downloadium",
-        "peekOfCode": "class DownloadiumApp(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"Downloadium - Seu Baixador de Vídeos\")\n        self.geometry(\"650x550\") # Janela um pouco maior\n        self.resizable(False, False) # Torna a janela não redimensionável para simplicidade\n        # Configurações de estilo\n        self.style = ttk.Style(self)\n        self.style.theme_use('clam') # 'clam', 'alt', 'default', 'classic'\n        self.style.configure('TFrame', background='#e0e0e0')",
+        "peekOfCode": "class DownloadiumApp(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"Downloadium - Seu Baixador de Vídeos\")\n        self.geometry(\"650x550\") # Janela um pouco maior\n        self.resizable(False, False) # Torna a janela não redimensionável para simplicidade\n        # Cache para informações de vídeo\n        self.video_info_cache = {}\n        self.url_check_job = None  # Para debouncing da URL\n        # Configuração de logging",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "validate_url",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def validate_url(url):\n    \"\"\"\n    Valida se a URL é válida e suportada.\n    Args:\n        url (str): URL a ser validada\n    Returns:\n        bool: True se a URL for válida, False caso contrário\n    \"\"\"\n    if not url or not isinstance(url, str):\n        return False",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "sanitize_filename",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def sanitize_filename(filename):\n    \"\"\"\n    Remove caracteres inválidos do nome do arquivo.\n    Args:\n        filename (str): Nome do arquivo a ser sanitizado\n    Returns:\n        str: Nome do arquivo sanitizado\n    \"\"\"\n    # Remove caracteres inválidos para nomes de arquivo\n    return re.sub(r'[<>:\"/\\\\|?*]', '_', filename)",
         "detail": "single_file_project.downloadium",
         "documentation": {}
     },
@@ -651,7 +686,7 @@
         "kind": 2,
         "importPath": "single_file_project.downloadium",
         "description": "single_file_project.downloadium",
-        "peekOfCode": "def get_resolutions(url, cookies_file=None):\n    \"\"\"\n    Obtém as resoluções disponíveis e o URL da thumbnail de um vídeo.\n    Args:\n        url (str): O URL do vídeo.\n        cookies_file (str, optional): Caminho para o arquivo de cookies. Defaults to None.\n    Returns:\n        tuple: Uma tupla contendo uma lista de resoluções (str) e o URL da thumbnail (str) ou None em caso de erro.\n    \"\"\"\n    options = {",
+        "peekOfCode": "def get_resolutions(url, cookies_file=None):\n    \"\"\"\n    Obtém as resoluções disponíveis e o URL da thumbnail de um vídeo.\n    Args:\n        url (str): O URL do vídeo.\n        cookies_file (str, optional): Caminho para o arquivo de cookies. Defaults to None.\n    Returns:\n        tuple: Uma tupla contendo uma lista de resoluções (str) e o URL da thumbnail (str) ou None em caso de erro.\n    \"\"\"\n    if not validate_url(url):",
         "detail": "single_file_project.downloadium",
         "documentation": {}
     },
@@ -688,6 +723,15 @@
         "importPath": "single_file_project.downloadium",
         "description": "single_file_project.downloadium",
         "peekOfCode": "def download_subtitles(url, output_path, language=\"en\"):\n    \"\"\"\n    Baixa as legendas de um vídeo.\n    Args:\n        url (str): O URL do vídeo.\n        output_path (str): O diretório de saída.\n        language (str, optional): Idioma da legenda. Defaults to \"en\".\n    Returns:\n        str: Mensagem de status do download.\n    \"\"\"",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "get_optimal_ydl_opts",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def get_optimal_ydl_opts(video_format=\"mp4\", cookies_file=None):\n    \"\"\"\n    Retorna configurações otimizadas para yt-dlp baseadas nas melhores práticas.\n    Args:\n        video_format (str): Formato de vídeo desejado\n        cookies_file (str, optional): Caminho para arquivo de cookies\n    Returns:\n        dict: Dicionário de opções otimizadas para yt-dlp\n    \"\"\"\n    opts = {",
         "detail": "single_file_project.downloadium",
         "documentation": {}
     }

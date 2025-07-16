@@ -1,4 +1,5 @@
 import os
+import re
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from PIL import Image, ImageTk
@@ -7,8 +8,49 @@ from io import BytesIO
 import threading
 from yt_dlp import YoutubeDL
 from yt_dlp.utils import DownloadError, ExtractorError
+import logging
+from urllib.parse import urlparse
 
 # --- Funções auxiliares ---
+
+def validate_url(url):
+    """
+    Valida se a URL é válida e suportada.
+    Args:
+        url (str): URL a ser validada
+    Returns:
+        bool: True se a URL for válida, False caso contrário
+    """
+    if not url or not isinstance(url, str):
+        return False
+    
+    try:
+        parsed = urlparse(url.strip())
+        if not all([parsed.scheme, parsed.netloc]):
+            return False
+        
+        # Lista de domínios suportados pelo yt-dlp
+        supported_domains = [
+            'youtube.com', 'youtu.be', 'vimeo.com', 'dailymotion.com',
+            'twitch.tv', 'tiktok.com', 'instagram.com', 'facebook.com',
+            'twitter.com', 'x.com', 'reddit.com', 'soundcloud.com'
+        ]
+        
+        domain = parsed.netloc.lower().replace('www.', '')
+        return any(supported in domain for supported in supported_domains)
+    except Exception:
+        return False
+
+def sanitize_filename(filename):
+    """
+    Remove caracteres inválidos do nome do arquivo.
+    Args:
+        filename (str): Nome do arquivo a ser sanitizado
+    Returns:
+        str: Nome do arquivo sanitizado
+    """
+    # Remove caracteres inválidos para nomes de arquivo
+    return re.sub(r'[<>:"/\\|?*]', '_', filename)
 
 def get_resolutions(url, cookies_file=None):
     """
@@ -19,13 +61,19 @@ def get_resolutions(url, cookies_file=None):
     Returns:
         tuple: Uma tupla contendo uma lista de resoluções (str) e o URL da thumbnail (str) ou None em caso de erro.
     """
+    if not validate_url(url):
+        return [], None, "URL inválida ou não suportada."
+    
     options = {
         'quiet': True,
         'skip_download': True,
         'noplaylist': True,
         'nocolor': True,
         'cachedir': False, # Evita problemas de cache
-        'retries': 5 # Tenta algumas vezes em caso de problemas de rede transitórios
+        'retries': 5, # Tenta algumas vezes em caso de problemas de rede transitórios
+        'socket_timeout': 30,  # Timeout para sockets
+        'extract_flat': False,
+        'no_warnings': True
     }
     if cookies_file and os.path.exists(cookies_file):
         options['cookiefile'] = cookies_file
@@ -35,29 +83,38 @@ def get_resolutions(url, cookies_file=None):
             if info is None:
                 return [], None, "Não foi possível extrair informações do vídeo."
 
-            formats = info.get('formats', [info]) # Fallback para o próprio info se 'formats' estiver ausente
+            formats = info.get('formats', [])
+            if not formats:
+                return [], None, "Nenhum formato disponível para este vídeo."
             
             # Filtra por formatos de vídeo que não são 'none' e têm um 'format_note'
             # e os ordena. Converte notas de resolução para inteiros para uma ordenação adequada, se possível
             resolutions_with_quality = []
+            seen_resolutions = set()
+            
             for f in formats:
                 format_note = f.get('format_note')
-                vcodec = f.get('vcodec')
-                if vcodec != 'none' and format_note:
+                vcodec = f.get('vcodec', 'none')
+                height = f.get('height')
+                
+                if vcodec != 'none' and format_note and format_note not in seen_resolutions:
+                    seen_resolutions.add(format_note)
                     # Tenta analisar a resolução (ex: '1080p' -> 1080) para uma melhor ordenação
                     try:
-                        height = int("".join(filter(str.isdigit, format_note)))
-                        resolutions_with_quality.append((height, format_note))
+                        if height:
+                            resolutions_with_quality.append((height, format_note))
+                        else:
+                            height_from_note = int("".join(filter(str.isdigit, format_note)))
+                            resolutions_with_quality.append((height_from_note, format_note))
                     except ValueError:
                         resolutions_with_quality.append((0, format_note)) # Fallback se não for analisável
 
-            # Ordena por altura (decrescente) e depois pela string original
-            # O set é para remover duplicatas mantendo a ordem para os valores já vistos
-            unique_resolutions = sorted(list(set(r[1] for r in resolutions_with_quality)), 
-                                        key=lambda x: (int("".join(filter(str.isdigit, x))) if any(char.isdigit() for char in x) else 0), 
-                                        reverse=True)
+            # Ordena por altura (decrescente) 
+            resolutions_with_quality.sort(key=lambda x: x[0], reverse=True)
+            unique_resolutions = [r[1] for r in resolutions_with_quality]
+            
             # Adiciona uma opção "Melhor" no topo para o yt-dlp escolher a melhor qualidade automaticamente
-            final_resolutions = ["Melhor"] + unique_resolutions if unique_resolutions else []
+            final_resolutions = ["Melhor"] + unique_resolutions if unique_resolutions else ["Melhor"]
 
             thumbnail = info.get('thumbnail')
             return final_resolutions, thumbnail, None
@@ -115,7 +172,14 @@ def download_video(url, resolution, output_path, progress_hook=None, cookies_fil
             'noplaylist': True,
             'nocolor': True,
             'cachedir': False,
-            'retries': 5
+            'retries': 5,
+            'fragment_retries': 5,
+            'skip_unavailable_fragments': True,
+            'keep_fragments': False,
+            'buffer_size': 1024 * 16,  # 16KB buffer
+            'http_chunk_size': 10485760,  # 10MB chunks
+            'concurrent_fragment_downloads': 1,
+            'no_warnings': True
         }
         if cookies_file and os.path.exists(cookies_file):
             ydl_opts['cookiefile'] = cookies_file
@@ -214,6 +278,37 @@ def download_subtitles(url, output_path, language="en"):
     except Exception as e:
         return f"Erro inesperado ao baixar legenda: {str(e)}"
 
+def get_optimal_ydl_opts(video_format="mp4", cookies_file=None):
+    """
+    Retorna configurações otimizadas para yt-dlp baseadas nas melhores práticas.
+    Args:
+        video_format (str): Formato de vídeo desejado
+        cookies_file (str, optional): Caminho para arquivo de cookies
+    Returns:
+        dict: Dicionário de opções otimizadas para yt-dlp
+    """
+    opts = {
+        'noplaylist': True,
+        'nocolor': True,
+        'extractaudio': False,
+        'retries': 5,
+        'fragment_retries': 5,
+        'skip_unavailable_fragments': True,
+        'keep_fragments': False,
+        'buffer_size': 1024 * 16,  # 16KB buffer
+        'http_chunk_size': 10485760,  # 10MB chunks
+        'concurrent_fragment_downloads': 1,
+        'no_warnings': True,
+        'writesubtitles': False,
+        'writeautomaticsub': False,
+        'ignoreerrors': False
+    }
+    
+    if cookies_file and os.path.exists(cookies_file):
+        opts['cookiefile'] = cookies_file
+    
+    return opts
+
 # --- Interface ---
 
 class DownloadiumApp(tk.Tk):
@@ -223,6 +318,13 @@ class DownloadiumApp(tk.Tk):
         self.geometry("650x550") # Janela um pouco maior
         self.resizable(False, False) # Torna a janela não redimensionável para simplicidade
 
+        # Cache para informações de vídeo
+        self.video_info_cache = {}
+        self.url_check_job = None  # Para debouncing da URL
+        
+        # Configuração de logging
+        logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+        
         # Configurações de estilo
         self.style = ttk.Style(self)
         self.style.theme_use('clam') # 'clam', 'alt', 'default', 'classic'
@@ -312,18 +414,64 @@ class DownloadiumApp(tk.Tk):
         self.status_label = ttk.Label(progress_frame, textvariable=self.status_text_var, font=('Inter', 9, 'italic'), foreground='blue')
         self.status_label.pack(anchor=tk.W, pady=(0, 5))
 
-        # Botões de Ação
+        # Frame para os botões de ação - CORRIGIDO
         button_frame = ttk.Frame(self)
-        button_frame.pack(pady=10)
-        # Referências aos botões para poder habilitar/desabilitar
-        self.download_video_btn = ttk.Button(button_frame, text="Baixar Vídeo", command=self.download_video_threaded)
-        self.download_video_btn.pack(side=tk.LEFT, padx=10)
-        self.download_thumbnail_btn = ttk.Button(button_frame, text="Baixar Thumbnail", command=self.download_thumbnail_threaded)
-        self.download_thumbnail_btn.pack(side=tk.LEFT, padx=10)
-        self.download_subtitle_btn = ttk.Button(button_frame, text="Baixar Legenda (en)", command=self.download_subtitle_threaded)
-        self.download_subtitle_btn.pack(side=tk.LEFT, padx=10)
-        self.download_all_btn = ttk.Button(button_frame, text="Download Completo", command=self.download_all_threaded)
-        self.download_all_btn.pack(side=tk.LEFT, padx=10)
+        button_frame.pack(fill=tk.X, pady=10, padx=15)
+        
+        # Primeira linha de botões
+        top_button_frame = ttk.Frame(button_frame)
+        top_button_frame.pack(fill=tk.X, pady=(0, 5))
+        
+        # Botão principal "Baixar Vídeo" - mais proeminente
+        self.download_video_btn = ttk.Button(
+            top_button_frame, 
+            text="🎬 BAIXAR VÍDEO", 
+            command=self.download_video_threaded,
+            style="Accent.TButton"
+        )
+        self.download_video_btn.pack(side=tk.LEFT, padx=(0, 10), ipadx=20, ipady=5)
+        
+        # Botão "Download Completo"
+        self.download_all_btn = ttk.Button(
+            top_button_frame, 
+            text="📦 Download Completo", 
+            command=self.download_all_threaded
+        )
+        self.download_all_btn.pack(side=tk.LEFT, padx=(0, 10), ipadx=10, ipady=5)
+        
+        # Segunda linha de botões
+        bottom_button_frame = ttk.Frame(button_frame)
+        bottom_button_frame.pack(fill=tk.X)
+        
+        # Botões secundários
+        self.download_thumbnail_btn = ttk.Button(
+            bottom_button_frame, 
+            text="🖼️ Thumbnail", 
+            command=self.download_thumbnail_threaded
+        )
+        self.download_thumbnail_btn.pack(side=tk.LEFT, padx=(0, 5), ipadx=5)
+        
+        self.download_subtitle_btn = ttk.Button(
+            bottom_button_frame, 
+            text="📝 Legenda", 
+            command=self.download_subtitle_threaded
+        )
+        self.download_subtitle_btn.pack(side=tk.LEFT, padx=(0, 5), ipadx=5)
+        
+        # Botão utilitário
+        ttk.Button(
+            bottom_button_frame, 
+            text="🗑️ Limpar Cache", 
+            command=self.clear_cache
+        ).pack(side=tk.RIGHT, padx=(5, 0))
+
+        # Configura estilo especial para o botão principal
+        self.style.configure('Accent.TButton', 
+                           font=('Inter', 11, 'bold'),
+                           foreground='white')
+        self.style.map('Accent.TButton',
+                       background=[('active', '#0078d4'), ('!active', '#106ebe')],
+                       relief=[('pressed', 'flat'), ('!pressed', 'raised')])
 
     def choose_output_path(self):
         """Abre uma caixa de diálogo para escolher o diretório de saída."""
@@ -358,8 +506,8 @@ class DownloadiumApp(tk.Tk):
 
     def load_resolutions_threaded(self):
         """Inicia o carregamento de resoluções em uma nova thread."""
-        url = self.url_var.get()
-        if not url or not url.strip().startswith(('http://', 'https://')):
+        url = self.url_var.get().strip()
+        if not url or not url.startswith(('http://', 'https://')):
             messagebox.showwarning("URL Inválida", "Por favor, insira uma URL de vídeo válida.")
             self.update_status("Por favor, insira uma URL válida.", 'red')
             self.resolution_cb['values'] = []
@@ -369,6 +517,15 @@ class DownloadiumApp(tk.Tk):
             self.update_download_button_state(False) # Garante que os botões fiquem desativados em caso de URL inválida
             return
 
+        # Verifica cache primeiro
+        if url in self.video_info_cache:
+            cached_data = self.video_info_cache[url]
+            self._update_resolutions_gui(cached_data['resolutions'], 
+                                       cached_data['thumbnail'], 
+                                       cached_data['error'])
+            self.update_status("Informações carregadas do cache!", 'green')
+            return
+
         self.update_status("Carregando resoluções e thumbnail...", 'orange')
         self.update_download_button_state(False) # Desativa os botões durante o carregamento
         self.resolution_cb.set("Carregando...")
@@ -376,12 +533,19 @@ class DownloadiumApp(tk.Tk):
         self.thumbnail_label.config(image='', text="Carregando...")
 
         # Inicia uma nova thread para a operação que pode demorar
-        threading.Thread(target=self._load_resolutions_task, args=(url,)).start()
+        threading.Thread(target=self._load_resolutions_task, args=(url,), daemon=True).start()
 
     def _load_resolutions_task(self, url):
         """Tarefa a ser executada em uma thread separada para carregar resoluções."""
         cookies = self.cookie_path_var.get() or None
         resolutions, thumbnail, error_msg = get_resolutions(url, cookies)
+        
+        # Salva no cache
+        self.video_info_cache[url] = {
+            'resolutions': resolutions,
+            'thumbnail': thumbnail,
+            'error': error_msg
+        }
 
         # Agenda atualizações da UI na thread principal
         self.after(0, self._update_resolutions_gui, resolutions, thumbnail, error_msg)
@@ -437,6 +601,11 @@ class DownloadiumApp(tk.Tk):
             if not self.thumbnail_image:
                 self.thumbnail_label.config(text="Preview da Thumbnail")
 
+    def clear_cache(self):
+        """Limpa o cache de informações de vídeo."""
+        self.video_info_cache.clear()
+        self.update_status("Cache limpo.", 'green')
+
     def progress_hook(self, d):
         """Hook de progresso para yt-dlp."""
         if d['status'] == 'downloading':
@@ -468,6 +637,7 @@ class DownloadiumApp(tk.Tk):
         elif d['status'] == 'error':
             self.after(0, self.progress_var.set, 0)
             self.after(0, self.update_status, f"Erro no download: {d.get('error', 'Desconhecido')}", 'red')
+            messagebox.showerror("Erro de Download", f"Ocorreu um erro durante o download: {d.get('error', 'Detalhes desconhecidos.')}")
             messagebox.showerror("Erro de Download", f"Ocorreu um erro durante o download: {d.get('error', 'Detalhes desconhecidos.')}")
 
     def download_video_threaded(self):
