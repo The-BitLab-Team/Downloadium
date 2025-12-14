@@ -19,7 +19,7 @@ def get_resolutions(url, cookies_file=None):
     Returns:
         tuple: Uma tupla contendo uma lista de resoluções (str) e o URL da thumbnail (str) ou None em caso de erro.
     """
-    options = {
+    options: dict[str, bool | int] = {
         'quiet': True,
         'skip_download': True,
         'noplaylist': True,
@@ -35,7 +35,7 @@ def get_resolutions(url, cookies_file=None):
             if info is None:
                 return [], None, "Não foi possível extrair informações do vídeo."
 
-            formats = info.get('formats', [info]) # Fallback para o próprio info se 'formats' estiver ausente
+            formats = info.get('formats') or [info] # Fallback para o próprio info se 'formats' estiver ausente
             
             # Filtra por formatos de vídeo que não são 'none' e têm um 'format_note'
             # e os ordena. Converte notas de resolução para inteiros para uma ordenação adequada, se possível
@@ -107,7 +107,7 @@ def download_video(url, resolution, output_path, progress_hook=None, cookies_fil
             # No momento, mantemos a lógica do usuário para 'format_note'.
             format_string = f'bestvideo[format_note*={resolution}]+bestaudio/best[ext={video_format}]'
         
-        ydl_opts = {
+        ydl_opts: dict[str, bool | int | str | list] = {
             'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
             'format': format_string,
             'merge_output_format': video_format,

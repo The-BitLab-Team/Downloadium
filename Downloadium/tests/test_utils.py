@@ -21,7 +21,7 @@ class TestUtils(unittest.TestCase):
         test_cases = {
             "valid_filename": "valid_filename",
             "inva|lid:name?": "inva_lid_name_",
-            "path/to\\file": "path_to__file",
+            "path/to\\file": "path_to_file",
             "*file*": "_file_",
         }
 

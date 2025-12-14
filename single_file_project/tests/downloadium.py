@@ -158,15 +158,31 @@ def sanitize_filename(filename):
     return filename
 
 def validate_url(url):
-    regex = re.compile(
-        r'^(?:http|ftp)s?://' 
-        r'(?:(?:[A-Z0-9](?:[A-Z0-9-]{0,61}[A-Z0-9])?\.)+(?:[A-Z]{2,6}\.?|[A-Z0-9-]{2,}\.?)|'  
-        r'localhost|'  
-        r'\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}|'  
-        r'\[?[A-F0-9]*:[A-F0-9:]+\]?)'  
-        r'(?::\d+)?'  
-        r'(?:/?|[/?]\S+)$', re.IGNORECASE)
-    return re.match(regex, url) is not None
+    # Aceita apenas HTTP/HTTPS
+    return url.startswith('http://') or url.startswith('https://')
+
+def fetch_video_formats(url):
+    """Retorna uma lista de formatos de vídeo filtrados e formatados."""
+    try:
+        from youtube_downloader_gui import YoutubeDL
+        ydl = YoutubeDL({'skip_download': True, 'nocolor': True})
+        info = ydl.extract_info(url, download=False)
+        formats = info.get('formats', [])
+        results = []
+        for f in formats:
+            # Filtra formatos indesejados (por exemplo, webm em alguns casos) e áudio apenas
+            if f.get('ext') == 'webm':
+                continue
+            if f.get('vcodec') == 'none':
+                continue
+            results.append({
+                'format_id': f.get('format_id'),
+                'resolution': f.get('format_note'),
+                'ext': f.get('ext')
+            })
+        return results
+    except Exception:
+        return []
 
 def download_video(url, output_path, quality, progress_hook):
     try:
