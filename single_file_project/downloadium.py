@@ -181,7 +181,7 @@ def download_subtitles(url, output_path, language="en"):
         str: Mensagem de status do download.
     """
     try:
-        if not url:
+        if not url:K
             return "Erro: URL do vídeo não fornecida."
         if not output_path:
             return "Erro: Caminho de saída não fornecido."
