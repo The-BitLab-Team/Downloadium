@@ -58,6 +58,14 @@
         "documentation": {}
     },
     {
+        "label": "YoutubeDL",
+        "importPath": "yt_dlp",
+        "description": "yt_dlp",
+        "isExtraImport": true,
+        "detail": "yt_dlp",
+        "documentation": {}
+    },
+    {
         "label": "ensure_directory_exists",
         "importPath": "Downloadium.backend.utils",
         "description": "Downloadium.backend.utils",
@@ -71,6 +79,143 @@
         "description": "Downloadium.backend.utils",
         "isExtraImport": true,
         "detail": "Downloadium.backend.utils",
+        "documentation": {}
+    },
+    {
+        "label": "ensure_directory_exists",
+        "importPath": "Downloadium.backend.utils",
+        "description": "Downloadium.backend.utils",
+        "isExtraImport": true,
+        "detail": "Downloadium.backend.utils",
+        "documentation": {}
+    },
+    {
+        "label": "DownloadManager",
+        "importPath": "Downloadium.backend.download_manager",
+        "description": "Downloadium.backend.download_manager",
+        "isExtraImport": true,
+        "detail": "Downloadium.backend.download_manager",
+        "documentation": {}
+    },
+    {
+        "label": "DownloadManager",
+        "importPath": "Downloadium.backend.download_manager",
+        "description": "Downloadium.backend.download_manager",
+        "isExtraImport": true,
+        "detail": "Downloadium.backend.download_manager",
+        "documentation": {}
+    },
+    {
+        "label": "annotations",
+        "importPath": "__future__",
+        "description": "__future__",
+        "isExtraImport": true,
+        "detail": "__future__",
+        "documentation": {}
+    },
+    {
+        "label": "shutil",
+        "kind": 6,
+        "isExtraImport": true,
+        "importPath": "shutil",
+        "description": "shutil",
+        "detail": "shutil",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Callable",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "cast",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Callable",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Optional",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Tuple",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "Any",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "cast",
+        "importPath": "typing",
+        "description": "typing",
+        "isExtraImport": true,
+        "detail": "typing",
+        "documentation": {}
+    },
+    {
+        "label": "DownloadError",
+        "importPath": "yt_dlp.utils",
+        "description": "yt_dlp.utils",
+        "isExtraImport": true,
+        "detail": "yt_dlp.utils",
+        "documentation": {}
+    },
+    {
+        "label": "DownloadError",
+        "importPath": "yt_dlp.utils",
+        "description": "yt_dlp.utils",
+        "isExtraImport": true,
+        "detail": "yt_dlp.utils",
+        "documentation": {}
+    },
+    {
+        "label": "ExtractorError",
+        "importPath": "yt_dlp.utils",
+        "description": "yt_dlp.utils",
+        "isExtraImport": true,
+        "detail": "yt_dlp.utils",
         "documentation": {}
     },
     {
@@ -156,6 +301,14 @@
         "documentation": {}
     },
     {
+        "label": "ttk",
+        "importPath": "tkinter",
+        "description": "tkinter",
+        "isExtraImport": true,
+        "detail": "tkinter",
+        "documentation": {}
+    },
+    {
         "label": "messagebox",
         "importPath": "tkinter",
         "description": "tkinter",
@@ -204,11 +357,12 @@
         "documentation": {}
     },
     {
-        "label": "download_video",
-        "importPath": "Downloadium.backend.downloader",
-        "description": "Downloadium.backend.downloader",
+        "label": "threading",
+        "kind": 6,
         "isExtraImport": true,
-        "detail": "Downloadium.backend.downloader",
+        "importPath": "threading",
+        "description": "threading",
+        "detail": "threading",
         "documentation": {}
     },
     {
@@ -357,28 +511,20 @@
         "documentation": {}
     },
     {
-        "label": "threading",
+        "label": "logging",
         "kind": 6,
         "isExtraImport": true,
-        "importPath": "threading",
-        "description": "threading",
-        "detail": "threading",
+        "importPath": "logging",
+        "description": "logging",
+        "detail": "logging",
         "documentation": {}
     },
     {
-        "label": "DownloadError",
-        "importPath": "yt_dlp.utils",
-        "description": "yt_dlp.utils",
+        "label": "urlparse",
+        "importPath": "urllib.parse",
+        "description": "urllib.parse",
         "isExtraImport": true,
-        "detail": "yt_dlp.utils",
-        "documentation": {}
-    },
-    {
-        "label": "ExtractorError",
-        "importPath": "yt_dlp.utils",
-        "description": "yt_dlp.utils",
-        "isExtraImport": true,
-        "detail": "yt_dlp.utils",
+        "detail": "urllib.parse",
         "documentation": {}
     },
     {
@@ -390,11 +536,20 @@
         "documentation": {}
     },
     {
+        "label": "fetch_metadata",
+        "kind": 2,
+        "importPath": "Downloadium.backend.downloader",
+        "description": "Downloadium.backend.downloader",
+        "peekOfCode": "def fetch_metadata(url, output_path='videos', quality='best', cookies_file=None):\n    \"\"\"Fetches metadata (via extract_flat=True) to determine total video count for a URL.\n    Returns:\n        int: total number of videos to be processed (1 for single videos)\n    \"\"\"\n    manager = DownloadManager(\n        output_path=output_path,\n        quality=quality,\n        video_format=\"mp4\",\n        cookies_file=cookies_file,",
+        "detail": "Downloadium.backend.downloader",
+        "documentation": {}
+    },
+    {
         "label": "download_video",
         "kind": 2,
         "importPath": "Downloadium.backend.downloader",
         "description": "Downloadium.backend.downloader",
-        "peekOfCode": "def download_video(url, output_path='videos', quality='best'):\n    \"\"\"Downloads a YouTube video based on the provided URL.\n    Args:\n        url (str): The URL of the video to download.\n        output_path (str): Directory where the downloaded file will be saved.\n        quality (str): Quality of the video (e.g., 'best', 'worst', specific resolutions like '720p').\n    Returns:\n        str: The path to the downloaded video file.\n    \"\"\"\n    try:",
+        "peekOfCode": "def download_video(url, output_path='videos', quality='best', callback=None):\n    \"\"\"Downloads a YouTube video based on the provided URL.\n    Args:\n        url (str): The URL of the video to download.\n        output_path (str): Directory where the downloaded file will be saved.\n        quality (str): Quality of the video (e.g., 'best', 'worst', specific resolutions like '720p').\n    Returns:\n        str: The path to the downloaded video file.\n    \"\"\"\n    try:",
         "detail": "Downloadium.backend.downloader",
         "documentation": {}
     },
@@ -414,6 +569,15 @@
         "description": "Downloadium.backend.downloader",
         "peekOfCode": "def download_subtitles(url, output_path='subtitles', language='en'):\n    \"\"\"Downloads subtitles for a YouTube video in the specified language.\n    Args:\n        url (str): The URL of the video whose subtitles are to be downloaded.\n        output_path (str): Directory where the subtitle file will be saved.\n        language (str): Language code of the subtitles to download (e.g., 'en', 'es').\n    Returns:\n        str: The path to the downloaded subtitle file.\n    \"\"\"\n    try:",
         "detail": "Downloadium.backend.downloader",
+        "documentation": {}
+    },
+    {
+        "label": "DownloadManager",
+        "kind": 6,
+        "importPath": "Downloadium.backend.download_manager",
+        "description": "Downloadium.backend.download_manager",
+        "peekOfCode": "class DownloadManager:\n    \"\"\"Gerencia downloads via yt-dlp com suporte a canais/playlists, legendas embutidas e progresso avançado.\"\"\"\n    def __init__(\n        self,\n        output_path: str = \"videos\",\n        quality: str = \"best\",\n        video_format: str = \"mp4\",\n        cookies_file: Optional[str] = None,\n    ):\n        self.output_path = output_path",
+        "detail": "Downloadium.backend.download_manager",
         "documentation": {}
     },
     {
@@ -493,7 +657,7 @@
         "kind": 2,
         "importPath": "Downloadium.gui.main",
         "description": "Downloadium.gui.main",
-        "peekOfCode": "def start_video_download():\n    url = url_entry.get()\n    quality = quality_var.get()\n    if not url:\n        messagebox.showerror(\"Erro\", \"Por favor, insira a URL do vídeo.\")\n        return\n    message = download_video(url, quality=quality)\n    messagebox.showinfo(\"Resultado\", message)\ndef start_thumbnail_download():\n    url = url_entry.get()",
+        "peekOfCode": "def start_video_download():\n    url = url_entry.get()\n    quality = quality_var.get()\n    if not url:\n        messagebox.showerror(\"Erro\", \"Por favor, insira a URL do vídeo.\")\n        return\n    progress_var.set(0)\n    status_var.set(\"Iniciando...\")\n    def callback(status: str, percent: float | None = None):\n        def update_ui():",
         "detail": "Downloadium.gui.main",
         "documentation": {}
     },
@@ -538,7 +702,7 @@
         "kind": 5,
         "importPath": "Downloadium.gui.main",
         "description": "Downloadium.gui.main",
-        "peekOfCode": "quality_var = tk.StringVar(value=\"best\")\nquality_menu = tk.OptionMenu(app, quality_var, \"best\", \"worst\", \"720p\", \"480p\", \"360p\")\nquality_menu.pack(pady=5)\n# Botão para baixar vídeo\ndownload_video_button = tk.Button(app, text=\"Baixar Vídeo\", command=start_video_download)\ndownload_video_button.pack(pady=10)\n# Botão para baixar thumbnail\ndownload_thumbnail_button = tk.Button(app, text=\"Baixar Thumbnail\", command=start_thumbnail_download)\ndownload_thumbnail_button.pack(pady=10)\n# Seleção de idioma para legendas",
+        "peekOfCode": "quality_var = tk.StringVar(value=\"best\")\nquality_menu = tk.OptionMenu(app, quality_var, \"best\", \"worst\", \"720p\", \"480p\", \"360p\")\nquality_menu.pack(pady=5)\n# Botão para baixar vídeo\ndownload_video_button = tk.Button(app, text=\"Baixar Vídeo\", command=start_video_download)\ndownload_video_button.pack(pady=10)\n# Progresso e status\nstatus_var = tk.StringVar(value=\"Pronto\")\nprogress_var = tk.DoubleVar(value=0.0)\nttk.Progressbar(app, variable=progress_var, maximum=100).pack(fill=\"x\", padx=10, pady=(0, 5))",
         "detail": "Downloadium.gui.main",
         "documentation": {}
     },
@@ -547,7 +711,7 @@
         "kind": 5,
         "importPath": "Downloadium.gui.main",
         "description": "Downloadium.gui.main",
-        "peekOfCode": "quality_menu = tk.OptionMenu(app, quality_var, \"best\", \"worst\", \"720p\", \"480p\", \"360p\")\nquality_menu.pack(pady=5)\n# Botão para baixar vídeo\ndownload_video_button = tk.Button(app, text=\"Baixar Vídeo\", command=start_video_download)\ndownload_video_button.pack(pady=10)\n# Botão para baixar thumbnail\ndownload_thumbnail_button = tk.Button(app, text=\"Baixar Thumbnail\", command=start_thumbnail_download)\ndownload_thumbnail_button.pack(pady=10)\n# Seleção de idioma para legendas\ntk.Label(app, text=\"Idioma das legendas:\").pack(pady=5)",
+        "peekOfCode": "quality_menu = tk.OptionMenu(app, quality_var, \"best\", \"worst\", \"720p\", \"480p\", \"360p\")\nquality_menu.pack(pady=5)\n# Botão para baixar vídeo\ndownload_video_button = tk.Button(app, text=\"Baixar Vídeo\", command=start_video_download)\ndownload_video_button.pack(pady=10)\n# Progresso e status\nstatus_var = tk.StringVar(value=\"Pronto\")\nprogress_var = tk.DoubleVar(value=0.0)\nttk.Progressbar(app, variable=progress_var, maximum=100).pack(fill=\"x\", padx=10, pady=(0, 5))\ntk.Label(app, textvariable=status_var).pack(pady=(0, 10))",
         "detail": "Downloadium.gui.main",
         "documentation": {}
     },
@@ -556,7 +720,25 @@
         "kind": 5,
         "importPath": "Downloadium.gui.main",
         "description": "Downloadium.gui.main",
-        "peekOfCode": "download_video_button = tk.Button(app, text=\"Baixar Vídeo\", command=start_video_download)\ndownload_video_button.pack(pady=10)\n# Botão para baixar thumbnail\ndownload_thumbnail_button = tk.Button(app, text=\"Baixar Thumbnail\", command=start_thumbnail_download)\ndownload_thumbnail_button.pack(pady=10)\n# Seleção de idioma para legendas\ntk.Label(app, text=\"Idioma das legendas:\").pack(pady=5)\nlanguage_var = tk.StringVar(value=\"en\")\nlanguage_entry = tk.Entry(app, textvariable=language_var)\nlanguage_entry.pack(pady=5)",
+        "peekOfCode": "download_video_button = tk.Button(app, text=\"Baixar Vídeo\", command=start_video_download)\ndownload_video_button.pack(pady=10)\n# Progresso e status\nstatus_var = tk.StringVar(value=\"Pronto\")\nprogress_var = tk.DoubleVar(value=0.0)\nttk.Progressbar(app, variable=progress_var, maximum=100).pack(fill=\"x\", padx=10, pady=(0, 5))\ntk.Label(app, textvariable=status_var).pack(pady=(0, 10))\n# Botão para baixar thumbnail\ndownload_thumbnail_button = tk.Button(app, text=\"Baixar Thumbnail\", command=start_thumbnail_download)\ndownload_thumbnail_button.pack(pady=10)",
+        "detail": "Downloadium.gui.main",
+        "documentation": {}
+    },
+    {
+        "label": "status_var",
+        "kind": 5,
+        "importPath": "Downloadium.gui.main",
+        "description": "Downloadium.gui.main",
+        "peekOfCode": "status_var = tk.StringVar(value=\"Pronto\")\nprogress_var = tk.DoubleVar(value=0.0)\nttk.Progressbar(app, variable=progress_var, maximum=100).pack(fill=\"x\", padx=10, pady=(0, 5))\ntk.Label(app, textvariable=status_var).pack(pady=(0, 10))\n# Botão para baixar thumbnail\ndownload_thumbnail_button = tk.Button(app, text=\"Baixar Thumbnail\", command=start_thumbnail_download)\ndownload_thumbnail_button.pack(pady=10)\n# Seleção de idioma para legendas\ntk.Label(app, text=\"Idioma das legendas:\").pack(pady=5)\nlanguage_var = tk.StringVar(value=\"en\")",
+        "detail": "Downloadium.gui.main",
+        "documentation": {}
+    },
+    {
+        "label": "progress_var",
+        "kind": 5,
+        "importPath": "Downloadium.gui.main",
+        "description": "Downloadium.gui.main",
+        "peekOfCode": "progress_var = tk.DoubleVar(value=0.0)\nttk.Progressbar(app, variable=progress_var, maximum=100).pack(fill=\"x\", padx=10, pady=(0, 5))\ntk.Label(app, textvariable=status_var).pack(pady=(0, 10))\n# Botão para baixar thumbnail\ndownload_thumbnail_button = tk.Button(app, text=\"Baixar Thumbnail\", command=start_thumbnail_download)\ndownload_thumbnail_button.pack(pady=10)\n# Seleção de idioma para legendas\ntk.Label(app, text=\"Idioma das legendas:\").pack(pady=5)\nlanguage_var = tk.StringVar(value=\"en\")\nlanguage_entry = tk.Entry(app, textvariable=language_var)",
         "detail": "Downloadium.gui.main",
         "documentation": {}
     },
@@ -696,11 +878,38 @@
         "documentation": {}
     },
     {
+        "label": "DownloadManager",
+        "kind": 6,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "class DownloadManager:\n    \"\"\"Gerencia downloads via yt-dlp com suporte a canais/playlists, legendas embutidas e progresso avançado.\"\"\"\n    def __init__(\n        self,\n        output_path: str,\n        resolution: str = \"Melhor\",\n        video_format: str = \"mp4\",\n        cookies_file: Optional[str] = None,\n    ):\n        self.output_path = output_path",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
         "label": "DownloadiumApp",
         "kind": 6,
         "importPath": "single_file_project.downloadium",
         "description": "single_file_project.downloadium",
-        "peekOfCode": "class DownloadiumApp(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"Downloadium - Seu Baixador de Vídeos\")\n        self.geometry(\"650x550\") # Janela um pouco maior\n        self.resizable(False, False) # Torna a janela não redimensionável para simplicidade\n        # Configurações de estilo\n        self.style = ttk.Style(self)\n        self.style.theme_use('clam') # 'clam', 'alt', 'default', 'classic'\n        self.style.configure('TFrame', background='#e0e0e0')",
+        "peekOfCode": "class DownloadiumApp(tk.Tk):\n    def __init__(self):\n        super().__init__()\n        self.title(\"Downloadium - Seu Baixador de Vídeos\")\n        self.geometry(\"650x550\") # Janela um pouco maior\n        self.resizable(False, False) # Torna a janela não redimensionável para simplicidade\n        # Cache para informações de vídeo\n        self.video_info_cache = {}\n        self.url_check_job = None  # Para debouncing da URL\n        # Configuração de logging",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "validate_url",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def validate_url(url):\n    \"\"\"\n    Valida se a URL é válida e suportada.\n    Args:\n        url (str): URL a ser validada\n    Returns:\n        bool: True se a URL for válida, False caso contrário\n    \"\"\"\n    if not url or not isinstance(url, str):\n        return False",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "sanitize_filename",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def sanitize_filename(filename):\n    \"\"\"\n    Remove caracteres inválidos do nome do arquivo.\n    Args:\n        filename (str): Nome do arquivo a ser sanitizado\n    Returns:\n        str: Nome do arquivo sanitizado\n    \"\"\"\n    # Remove caracteres inválidos para nomes de arquivo\n    return re.sub(r'[<>:\"/\\\\|?*]', '_', filename)",
         "detail": "single_file_project.downloadium",
         "documentation": {}
     },
@@ -709,7 +918,7 @@
         "kind": 2,
         "importPath": "single_file_project.downloadium",
         "description": "single_file_project.downloadium",
-        "peekOfCode": "def get_resolutions(url, cookies_file=None):\n    \"\"\"\n    Obtém as resoluções disponíveis e o URL da thumbnail de um vídeo.\n    Args:\n        url (str): O URL do vídeo.\n        cookies_file (str, optional): Caminho para o arquivo de cookies. Defaults to None.\n    Returns:\n        tuple: Uma tupla contendo uma lista de resoluções (str) e o URL da thumbnail (str) ou None em caso de erro.\n    \"\"\"\n    options: dict[str, bool | int] = {",
+        "peekOfCode": "def get_resolutions(url, cookies_file=None):\n    \"\"\"\n    Obtém as resoluções disponíveis e o URL da thumbnail de um vídeo.\n    Args:\n        url (str): O URL do vídeo.\n        cookies_file (str, optional): Caminho para o arquivo de cookies. Defaults to None.\n    Returns:\n        tuple: Uma tupla contendo uma lista de resoluções (str) e o URL da thumbnail (str) ou None em caso de erro.\n    \"\"\"\n    if not validate_url(url):",
         "detail": "single_file_project.downloadium",
         "documentation": {}
     },
@@ -718,7 +927,7 @@
         "kind": 2,
         "importPath": "single_file_project.downloadium",
         "description": "single_file_project.downloadium",
-        "peekOfCode": "def ensure_directory_exists(path):\n    \"\"\"Garante que o diretório especificado exista.\"\"\"\n    if not os.path.exists(path):\n        os.makedirs(path)\ndef download_video(url, resolution, output_path, progress_hook=None, cookies_file=None, video_format=\"mp4\"):\n    \"\"\"\n    Baixa um vídeo com a resolução e formato especificados.\n    Args:\n        url (str): O URL do vídeo.\n        resolution (str): A resolução desejada (ex: '1080p' ou 'Melhor').",
+        "peekOfCode": "def ensure_directory_exists(path):\n    \"\"\"Garante que o diretório especificado exista.\"\"\"\n    if not os.path.exists(path):\n        os.makedirs(path)\nclass DownloadManager:\n    \"\"\"Gerencia downloads via yt-dlp com suporte a canais/playlists, legendas embutidas e progresso avançado.\"\"\"\n    def __init__(\n        self,\n        output_path: str,\n        resolution: str = \"Melhor\",",
         "detail": "single_file_project.downloadium",
         "documentation": {}
     },
@@ -727,7 +936,7 @@
         "kind": 2,
         "importPath": "single_file_project.downloadium",
         "description": "single_file_project.downloadium",
-        "peekOfCode": "def download_video(url, resolution, output_path, progress_hook=None, cookies_file=None, video_format=\"mp4\"):\n    \"\"\"\n    Baixa um vídeo com a resolução e formato especificados.\n    Args:\n        url (str): O URL do vídeo.\n        resolution (str): A resolução desejada (ex: '1080p' ou 'Melhor').\n        output_path (str): O diretório de saída.\n        progress_hook (function, optional): Função de callback para progresso.\n        cookies_file (str, optional): Caminho para o arquivo de cookies.\n        video_format (str, optional): Formato de saída do vídeo (ex: 'mp4').",
+        "peekOfCode": "def download_video(\n    url,\n    resolution,\n    output_path,\n    progress_hook: Optional[Callable[[str, Optional[float]], None]] = None,\n    cookies_file=None,\n    video_format=\"mp4\",\n):\n    \"\"\"\n    Baixa um vídeo com a resolução e formato especificados.",
         "detail": "single_file_project.downloadium",
         "documentation": {}
     },
@@ -746,6 +955,15 @@
         "importPath": "single_file_project.downloadium",
         "description": "single_file_project.downloadium",
         "peekOfCode": "def download_subtitles(url, output_path, language=\"en\"):\n    \"\"\"\n    Baixa as legendas de um vídeo.\n    Args:\n        url (str): O URL do vídeo.\n        output_path (str): O diretório de saída.\n        language (str, optional): Idioma da legenda. Defaults to \"en\".\n    Returns:\n        str: Mensagem de status do download.\n    \"\"\"",
+        "detail": "single_file_project.downloadium",
+        "documentation": {}
+    },
+    {
+        "label": "get_optimal_ydl_opts",
+        "kind": 2,
+        "importPath": "single_file_project.downloadium",
+        "description": "single_file_project.downloadium",
+        "peekOfCode": "def get_optimal_ydl_opts(video_format=\"mp4\", cookies_file=None):\n    \"\"\"\n    Retorna configurações otimizadas para yt-dlp baseadas nas melhores práticas.\n    Args:\n        video_format (str): Formato de vídeo desejado\n        cookies_file (str, optional): Caminho para arquivo de cookies\n    Returns:\n        dict: Dicionário de opções otimizadas para yt-dlp\n    \"\"\"\n    opts = {",
         "detail": "single_file_project.downloadium",
         "documentation": {}
     },

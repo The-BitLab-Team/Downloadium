@@ -2,8 +2,24 @@ import os
 import requests
 from yt_dlp import YoutubeDL
 from Downloadium.backend.utils import ensure_directory_exists, sanitize_filename
+from Downloadium.backend.download_manager import DownloadManager
 
-def download_video(url, output_path='videos', quality='best'):
+
+def fetch_metadata(url, output_path='videos', quality='best', cookies_file=None):
+    """Fetches metadata (via extract_flat=True) to determine total video count for a URL.
+
+    Returns:
+        int: total number of videos to be processed (1 for single videos)
+    """
+    manager = DownloadManager(
+        output_path=output_path,
+        quality=quality,
+        video_format="mp4",
+        cookies_file=cookies_file,
+    )
+    return manager.fetch_metadata(url)
+
+def download_video(url, output_path='videos', quality='best', callback=None):
     """Downloads a YouTube video based on the provided URL.
 
     Args:
@@ -15,19 +31,17 @@ def download_video(url, output_path='videos', quality='best'):
         str: The path to the downloaded video file.
     """
     try:
-        # Ensure the output directory exists
-        ensure_directory_exists(output_path)
+        def _noop(_status: str, _percent: float | None = None) -> None:
+            return
 
-        # Set options for yt-dlp
-        options = {
-            'outtmpl': os.path.join(output_path, '%(title)s.%(ext)s'),
-            'format': quality
-        }
+        cb = callback or _noop
 
-        with YoutubeDL(options) as ydl:
-            ydl.download([url])
-
-        return f"Video downloaded successfully to {output_path}"
+        manager = DownloadManager(
+            output_path=output_path,
+            quality=quality,
+            video_format="mp4",
+        )
+        return manager.download(url, cb)
 
     except Exception as e:
         return f"Error downloading video: {str(e)}"

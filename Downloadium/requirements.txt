@@ -3,3 +3,4 @@ requests
 tkinter
 pillow
 browser-cookie3
+yt-dlp
