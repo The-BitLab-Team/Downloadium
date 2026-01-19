@@ -1,406 +1,49 @@
-import os
-import re
-import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
-from PIL import Image, ImageTk
-import requests
-from io import BytesIO
-import threading
-from yt_dlp import YoutubeDL
-from yt_dlp.utils import DownloadError, ExtractorError
-import logging
-from urllib.parse import urlparse
-from typing import Callable, Optional, Tuple, Any, cast
-import shutil
+"""Compatibilidade e entrypoint.
 
-# --- Funções auxiliares ---
+Este arquivo era a implementação monolítica. Ele foi refatorado para:
+- backend.py: DownloadManager + helpers
+- gui.py: DownloadiumApp (customtkinter com fallback ttk)
+- main.py: entrypoint limpo
 
-def validate_url(url):
-    """
-    Valida se a URL é válida e suportada.
-    Args:
-        url (str): URL a ser validada
-    Returns:
-        bool: True se a URL for válida, False caso contrário
-    """
-    if not url or not isinstance(url, str):
-        return False
-    
-    try:
-        parsed = urlparse(url.strip())
-        if not all([parsed.scheme, parsed.netloc]):
-            return False
-        
-        # Lista de domínios suportados pelo yt-dlp
-        supported_domains = [
-            'youtube.com', 'youtu.be', 'vimeo.com', 'dailymotion.com',
-            'twitch.tv', 'tiktok.com', 'instagram.com', 'facebook.com',
-            'twitter.com', 'x.com', 'reddit.com', 'soundcloud.com'
-        ]
-        
-        domain = parsed.netloc.lower().replace('www.', '')
-        return any(supported in domain for supported in supported_domains)
-    except Exception:
-        return False
+Mantemos as funções importadas por testes/usuários via reexport.
+"""
 
-def sanitize_filename(filename):
-    """
-    Remove caracteres inválidos do nome do arquivo.
-    Args:
-        filename (str): Nome do arquivo a ser sanitizado
-    Returns:
-        str: Nome do arquivo sanitizado
-    """
-    # Remove caracteres inválidos para nomes de arquivo
-    return re.sub(r'[<>:"/\\|?*]', '_', filename)
+from __future__ import annotations
 
-def get_resolutions(url, cookies_file=None):
-    """
-    Obtém as resoluções disponíveis e o URL da thumbnail de um vídeo.
-    Args:
-        url (str): O URL do vídeo.
-        cookies_file (str, optional): Caminho para o arquivo de cookies. Defaults to None.
-    Returns:
-        tuple: Uma tupla contendo uma lista de resoluções (str) e o URL da thumbnail (str) ou None em caso de erro.
-    """
-    if not validate_url(url):
-        return [], None, "URL inválida ou não suportada."
-    
-    options = {
-        'quiet': True,
-        'skip_download': True,
-        'noplaylist': True,
-        'nocolor': True,
-        'cachedir': False, # Evita problemas de cache
-        'retries': 5, # Tenta algumas vezes em caso de problemas de rede transitórios
-        'socket_timeout': 30,  # Timeout para sockets
-        'extract_flat': False,
-        'no_warnings': True
-    }
-    if cookies_file and os.path.exists(cookies_file):
-        options['cookiefile'] = cookies_file
-    try:
-        with YoutubeDL(cast(Any, options)) as ydl:
-            info = ydl.extract_info(url, download=False)
-            if info is None:
-                return [], None, "Não foi possível extrair informações do vídeo."
-
-            formats = info.get('formats', [])
-            if not formats:
-                return [], None, "Nenhum formato disponível para este vídeo."
-            
-            # Filtra por formatos de vídeo que não são 'none' e têm um 'format_note'
-            # e os ordena. Converte notas de resolução para inteiros para uma ordenação adequada, se possível
-            resolutions_with_quality = []
-            seen_resolutions = set()
-            
-            for f in formats:
-                format_note = f.get('format_note')
-                vcodec = f.get('vcodec', 'none')
-                height = f.get('height')
-                
-                if vcodec != 'none' and format_note and format_note not in seen_resolutions:
-                    seen_resolutions.add(format_note)
-                    # Tenta analisar a resolução (ex: '1080p' -> 1080) para uma melhor ordenação
-                    try:
-                        if height:
-                            resolutions_with_quality.append((height, format_note))
-                        else:
-                            height_from_note = int("".join(filter(str.isdigit, format_note)))
-                            resolutions_with_quality.append((height_from_note, format_note))
-                    except ValueError:
-                        resolutions_with_quality.append((0, format_note)) # Fallback se não for analisável
-
-            # Ordena por altura (decrescente) 
-            resolutions_with_quality.sort(key=lambda x: x[0], reverse=True)
-            unique_resolutions = [r[1] for r in resolutions_with_quality]
-            
-            # Adiciona uma opção "Melhor" no topo para o yt-dlp escolher a melhor qualidade automaticamente
-            final_resolutions = ["Melhor"] + unique_resolutions if unique_resolutions else ["Melhor"]
-
-            thumbnail = info.get('thumbnail')
-            return final_resolutions, thumbnail, None
-    except ExtractorError as e:
-        return [], None, f"Erro ao extrair informações do vídeo: {e}"
-    except DownloadError as e: # Captura erros de download específicos do yt_dlp
-        return [], None, f"Erro de download do yt-dlp: {e}"
-    except Exception as e:
-        return [], None, f"Erro inesperado ao obter resoluções: {e}"
-
-def ensure_directory_exists(path):
-    """Garante que o diretório especificado exista."""
-    if not os.path.exists(path):
-        os.makedirs(path)
+import sys
+from pathlib import Path
 
 
-class DownloadManager:
-    """Gerencia downloads via yt-dlp com suporte a canais/playlists, legendas embutidas e progresso avançado."""
+# Garante imports locais quando executado a partir da raiz do repo
+_THIS_DIR = Path(__file__).resolve().parent
+if str(_THIS_DIR) not in sys.path:
+    sys.path.insert(0, str(_THIS_DIR))
 
-    def __init__(
-        self,
-        output_path: str,
-        resolution: str = "Melhor",
-        video_format: str = "mp4",
-        cookies_file: Optional[str] = None,
-    ):
-        self.output_path = output_path
-        self.resolution = resolution
-        self.video_format = video_format
-        self.cookies_file = cookies_file
 
-        self._total_videos: int = 0
-        self._current_index: int = 0
-        self._current_video_id: Optional[str] = None
+from backend import (  # noqa: E402
+    DownloadManager,
+    download_video,
+    fetch_video_formats,
+    get_resolutions,
+    sanitize_filename,
+    validate_url,
+)
 
-    def _build_format_string(self) -> str:
-        # Evita prender o download a um contêiner específico (ex.: avi/mov raramente existem como streams).
-        # A conversão/remux para o formato escolhido é feita pelo ffmpeg via merge_output_format.
-        if (self.resolution or "").lower() == "melhor":
-            return "bestvideo+bestaudio/best"
-        return f"bestvideo[format_note*={self.resolution}]+bestaudio/best"
+from gui import DownloadiumApp  # noqa: E402
 
-    def fetch_metadata(self, url: str) -> int:
-        """Obtém metadados usando extract_flat=True para estimar/contar quantos vídeos serão processados."""
-        if not url:
-            raise ValueError("URL não fornecida")
 
-        ydl_opts: dict[str, Any] = {
-            'quiet': True,
-            'skip_download': True,
-            'extract_flat': True,
-            'noplaylist': False,
-            'nocolor': True,
-            'cachedir': False,
-            'retries': 5,
-            'socket_timeout': 30,
-            'no_warnings': True,
-        }
-        if self.cookies_file and os.path.exists(self.cookies_file):
-            ydl_opts['cookiefile'] = self.cookies_file
+def main() -> None:
+    app = DownloadiumApp()
+    app.mainloop()
 
-        with YoutubeDL(cast(Any, ydl_opts)) as ydl:
-            info = ydl.extract_info(url, download=False)
+if __name__ == "__main__":
+    main()
 
-        if not info:
-            self._total_videos = 0
-            return 0
 
-        playlist_count = info.get('playlist_count')
-        if isinstance(playlist_count, int) and playlist_count > 0:
-            self._total_videos = playlist_count
-            return playlist_count
-
-        entries = info.get('entries')
-        if entries is None:
-            self._total_videos = 1
-            return 1
-
-        # entries pode ser lista ou gerador
-        count = 0
-        try:
-            for _ in entries:
-                count += 1
-        except TypeError:
-            # fallback seguro
-            count = 0
-
-        self._total_videos = count if count > 0 else 1
-        return self._total_videos
-
-    def download(self, url: str, callback: Callable[[str, Optional[float]], None]) -> str:
-        """Baixa vídeo/canal/playlist e emite updates via callback(status, percent)."""
-
-        if not url:
-            return "Erro: URL do vídeo não fornecida."
-        if not self.output_path:
-            return "Erro: Caminho de saída não fornecido."
-
-        ensure_directory_exists(self.output_path)
-
-        # Embed de legendas requer ffmpeg/ffprobe. Se não existir no PATH,
-        # faz fallback: baixa vídeo + legendas, mas não embute.
-        embed_enabled = shutil.which('ffmpeg') is not None and shutil.which('ffprobe') is not None
-        if not embed_enabled:
-            try:
-                callback(
-                    "Aviso: ffmpeg/ffprobe não encontrado no PATH. Baixando sem embutir legendas.",
-                    0.0,
-                )
-            except Exception:
-                pass
-
-        try:
-            total = self.fetch_metadata(url)
-        except Exception:
-            total = 0
-
-        self._current_index = 0
-        self._current_video_id = None
-
-        def emit(status: str, percent: Optional[float] = None) -> None:
-            try:
-                callback(status, percent)
-            except Exception:
-                # Nunca deixa exceção do callback derrubar o download
-                pass
-
-        if total > 0:
-            emit(f"Video 0 of {total} | Status: Downloading", 0.0)
-        else:
-            emit("Status: Downloading", 0.0)
-
-        def progress_hook(d: dict) -> None:
-            status = d.get('status')
-            info_dict = d.get('info_dict') or {}
-            video_id = info_dict.get('id') or d.get('info_dict', {}).get('id')
-
-            if status == 'downloading':
-                # Detecta transição para um novo vídeo dentro de playlist/canal
-                if video_id and video_id != self._current_video_id:
-                    self._current_video_id = video_id
-                    self._current_index += 1
-
-                total_bytes = d.get('total_bytes') or d.get('total_bytes_estimate')
-                downloaded_bytes = d.get('downloaded_bytes', 0)
-                percent = None
-                if isinstance(total_bytes, (int, float)) and total_bytes:
-                    percent = max(0.0, min(100.0, (downloaded_bytes / total_bytes) * 100))
-
-                if total > 0:
-                    msg = f"Video {max(self._current_index, 1)} of {total} | Status: Downloading"
-                else:
-                    msg = "Status: Downloading"
-                if percent is not None:
-                    msg += f" | {percent:.1f}%"
-                emit(msg, percent)
-
-            elif status == 'finished':
-                # Arquivo baixado; yt-dlp pode iniciar merge/encode/postprocess
-                if total > 0:
-                    msg = f"Video {max(self._current_index, 1)} of {total} | Status: Encoding | 100.0%"
-                else:
-                    msg = "Status: Encoding | 100.0%"
-                emit(msg, 100.0)
-
-            elif status == 'error':
-                err = d.get('error')
-                if total > 0:
-                    msg = f"Video {max(self._current_index, 1)} of {total} | Status: Error"
-                else:
-                    msg = "Status: Error"
-                if err:
-                    msg += f" | {err}"
-                emit(msg, 0.0)
-
-        def postprocessor_hook(d: dict) -> None:
-            pp = str(d.get('postprocessor') or "")
-            pp_status = d.get('status')
-
-            if total > 0:
-                prefix = f"Video {max(self._current_index, 1)} of {total}"
-            else:
-                prefix = ""
-
-            if 'EmbedSubtitle' in pp:
-                state = "Embedding Subtitles"
-            else:
-                state = "Encoding"
-
-            if pp_status == 'started':
-                msg = f"{prefix + ' | ' if prefix else ''}Status: {state}"
-                emit(msg, None)
-            elif pp_status == 'finished':
-                # Mantém o status em Encoding para o próximo passo (ou finalização)
-                msg = f"{prefix + ' | ' if prefix else ''}Status: {state}"
-                emit(msg, None)
-
-        outtmpl = os.path.join(
-            self.output_path,
-            '%(channel)s',
-            '%(playlist)s',
-            '%(title)s.%(ext)s',
-        )
-
-        ydl_opts: dict[str, Any] = {
-            'outtmpl': outtmpl,
-            'outtmpl_na_placeholder': 'Videos',
-            'format': self._build_format_string(),
-            'merge_output_format': self.video_format,
-            'progress_hooks': [progress_hook],
-            'postprocessor_hooks': [postprocessor_hook],
-            'noplaylist': False,
-            'nocolor': True,
-            'windowsfilenames': True,
-            'cachedir': False,
-            'retries': 5,
-            'fragment_retries': 5,
-            'skip_unavailable_fragments': True,
-            'keep_fragments': False,
-            'buffer_size': 1024 * 16,
-            'http_chunk_size': 10485760,
-            'concurrent_fragment_downloads': 1,
-            'no_warnings': True,
-            # Legendas
-            'writesubtitles': True,
-            'writeautomaticsub': True,
-            'subtitleslangs': ['en.*', 'en'],
-            'subtitlesformat': 'best',
-        }
-
-        if embed_enabled:
-            ydl_opts['embedsubtitles'] = True
-            ydl_opts['postprocessors'] = [
-                {'key': 'FFmpegEmbedSubtitle'},
-            ]
-
-        if self.cookies_file and os.path.exists(self.cookies_file):
-            ydl_opts['cookiefile'] = self.cookies_file
-
-        try:
-            with YoutubeDL(cast(Any, ydl_opts)) as ydl:
-                ydl.download([url])
-            emit("Status: Done", 100.0)
-            return "Download finalizado com sucesso!"
-        except DownloadError as e:
-            return f"Erro no download (yt-dlp): {str(e)}"
-        except Exception as e:
-            return f"Erro inesperado no download: {str(e)}"
-
-def download_video(
-    url,
-    resolution,
-    output_path,
-    progress_hook: Optional[Callable[[str, Optional[float]], None]] = None,
-    cookies_file=None,
-    video_format="mp4",
-):
-    """
-    Baixa um vídeo com a resolução e formato especificados.
-    Args:
-        url (str): O URL do vídeo.
-        resolution (str): A resolução desejada (ex: '1080p' ou 'Melhor').
-        output_path (str): O diretório de saída.
-        progress_hook (function, optional): Função de callback para progresso.
-        cookies_file (str, optional): Caminho para o arquivo de cookies.
-        video_format (str, optional): Formato de saída do vídeo (ex: 'mp4').
-    Returns:
-        str: Mensagem de status do download.
-    """
-    manager = DownloadManager(
-        output_path=output_path,
-        resolution=resolution,
-        video_format=video_format,
-        cookies_file=cookies_file,
-    )
-
-    if progress_hook is None:
-        def _noop(_status: str, _percent: Optional[float] = None) -> None:
-            return
-        callback = _noop
-    else:
-        callback = cast(Callable[[str, Optional[float]], None], progress_hook)
-
-    return manager.download(url, callback)
+# --- Código legado (desativado) ---
+# O restante do arquivo original foi mantido apenas como referência histórica,
+# mas não é carregado nem executado.
+_LEGACY = r'''
 
 def download_thumbnail(url, output_path):
     """
@@ -1035,3 +678,5 @@ class DownloadiumApp(tk.Tk):
 if __name__ == '__main__':
     app = DownloadiumApp()
     app.mainloop()
+
+'''

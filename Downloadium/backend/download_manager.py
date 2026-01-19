@@ -19,11 +19,18 @@ class DownloadManager:
         quality: str = "best",
         video_format: str = "mp4",
         cookies_file: Optional[str] = None,
+        sleep_interval: float = 2.0,
+        max_sleep_interval: float = 5.0,
+        sleep_interval_requests: float = 1.0,
     ):
         self.output_path = output_path
         self.quality = quality
         self.video_format = video_format
         self.cookies_file = cookies_file
+
+        self.sleep_interval = sleep_interval
+        self.max_sleep_interval = max_sleep_interval
+        self.sleep_interval_requests = sleep_interval_requests
 
         self._total_videos: int = 0
         self._current_index: int = 0
@@ -201,6 +208,10 @@ class DownloadManager:
             "skip_unavailable_fragments": True,
             "keep_fragments": False,
             "no_warnings": True,
+            # Throttling / delays (reduz a chance de rate-limit)
+            "sleep_interval": self.sleep_interval,
+            "max_sleep_interval": self.max_sleep_interval,
+            "sleep_interval_requests": self.sleep_interval_requests,
             # Legendas
             "writesubtitles": True,
             "writeautomaticsub": True,
@@ -217,12 +228,35 @@ class DownloadManager:
         if self.cookies_file and os.path.exists(self.cookies_file):
             ydl_opts["cookiefile"] = self.cookies_file
 
-        try:
-            with YoutubeDL(cast(Any, ydl_opts)) as ydl:
+        def run_once(opts: dict[str, Any]) -> None:
+            with YoutubeDL(cast(Any, opts)) as ydl:
                 ydl.download([url])
+
+        try:
+            run_once(ydl_opts)
             emit("Status: Done", 100.0)
             return f"Video downloaded successfully to {self.output_path}"
         except DownloadError as e:
-            return f"Error downloading video (yt-dlp): {str(e)}"
+            msg = str(e)
+            lower = msg.lower()
+
+            if "requested format is not available" in lower:
+                try:
+                    emit("Warning: requested format unavailable. Falling back to best...", None)
+                    ydl_opts_retry = dict(ydl_opts)
+                    ydl_opts_retry['format'] = "bestvideo+bestaudio/best"
+                    run_once(ydl_opts_retry)
+                    emit("Status: Done", 100.0)
+                    return f"Video downloaded successfully to {self.output_path}"
+                except Exception as e2:
+                    return f"Error downloading video (yt-dlp): {str(e2)}"
+
+            if "rate-limited" in lower or "this content isn't available" in lower:
+                return (
+                    "YouTube rate-limited this session (can last up to ~1h). "
+                    "Try again later; to reduce recurrence, keep delays between videos and, if possible, use cookies/login. "
+                    f"Detail: {msg}"
+                )
+            return f"Error downloading video (yt-dlp): {msg}"
         except Exception as e:
             return f"Error downloading video: {str(e)}"
